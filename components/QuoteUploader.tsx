@@ -182,7 +182,7 @@ export default function QuoteUploader({ onParseComplete }: QuoteUploaderProps) {
                             {isLoading ? (
                                 uploadProgress.length > 0 && (
                                     <span className="text-sm">
-                                        {uploadProgress.filter(p => p.status === 'done').length} of {uploadProgress.length} files processed
+                                        Processing {uploadProgress.length} file{uploadProgress.length > 1 ? 's' : ''}...
                                     </span>
                                 )
                             ) : (
