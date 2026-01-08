@@ -79,7 +79,7 @@ export default function Home() {
 
         {/* Footer */}
         <footer className="mt-16 text-center text-slate-400 text-sm">
-          <p>Powered by OpenAI GPT-4 • Built with Next.js & Supabase</p>
+          <p>Powered by OpenAI • Built with Next.js & Supabase</p>
         </footer>
       </div>
     </main>

@@ -1,6 +1,6 @@
 # Hotel Quote Parser 🏨
 
-AI-powered hotel event quote parser. Extract financial data from hotel quotes instantly using OpenAI GPT-4o.
+AI-powered hotel event quote parser. Extract financial data from hotel quotes instantly using OpenAI GPT-5.
 
 ![Hotel Quote Parser](https://img.shields.io/badge/Next.js-16.1-black?style=flat-square&logo=next.js)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=flat-square&logo=typescript)
@@ -8,7 +8,7 @@ AI-powered hotel event quote parser. Extract financial data from hotel quotes in
 
 ## ✨ Features
 
-- **AI-Powered Parsing** - Upload PDFs, images, or paste text to extract hotel quote data using OpenAI GPT-4o
+- **AI-Powered Parsing** - Upload PDFs, images, or paste text to extract hotel quote data using OpenAI GPT-5
 - **Large File Support** - Direct-to-Storage uploads handle huge files (50MB+) bypassing server limits
 - **Multi-Format Support** - Accepts PDF, images (PNG, JPG), Word docs, and raw text
 - **Smart Extraction** - Automatically identifies hotel name, total cost, guestrooms, meeting spaces, and F&B costs
@@ -19,7 +19,7 @@ AI-powered hotel event quote parser. Extract financial data from hotel quotes in
 
 - **Framework**: Next.js 16.1 (App Router)
 - **Language**: TypeScript
-- **AI/ML**: OpenAI GPT-4o with vision capabilities
+- **AI/ML**: OpenAI GPT-5 with vision capabilities
 - **Database**: Supabase (PostgreSQL + Storage)
 - **Styling**: Tailwind CSS with custom design system
 - **File Handling**: Direct client-to-Supabase Storage upload (bypassing Vercel 4.5MB limit)
@@ -137,4 +137,4 @@ MIT
 
 ---
 
-**Built with** OpenAI GPT-4 + Next.js + Supabase
+**Built with** OpenAI GPT-5 + Next.js + Supabase
