@@ -1,36 +1,119 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Hotel Quote Parser 🏨
 
-## Getting Started
+AI-powered hotel event quote parser. Extract financial data from hotel quotes instantly using OpenAI GPT-4o.
 
-First, run the development server:
+![Hotel Quote Parser](https://img.shields.io/badge/Next.js-16.1-black?style=flat-square&logo=next.js)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=flat-square&logo=typescript)
+![AI Powered](https://img.shields.io/badge/AI-GPT--4o-purple?style=flat-square)
+
+## ✨ Features
+
+- **AI-Powered Parsing** - Upload PDFs, images, or paste text to extract hotel quote data using OpenAI GPT-4o
+- **Multi-Format Support** - Accepts PDF, images (PNG, JPG), Word docs, and raw text
+- **Smart Extraction** - Automatically identifies hotel name, total cost, guestrooms, meeting spaces, and F&B costs
+- **Quote History** - Stores parsed quotes in Supabase with full history tracking
+- **Export Options** - Export parsed data as JSON or CSV
+
+## 🚀 Tech Stack
+
+- **Framework**: Next.js 16.1 (App Router)
+- **Language**: TypeScript
+- **AI/ML**: OpenAI GPT-4o with vision capabilities
+- **Database**: Supabase (PostgreSQL)
+- **Styling**: Tailwind CSS with custom design system
+- **File Handling**: Multipart form uploads with AI vision
+- **Deployment**: Vercel: https://hotel-quote-parser-brown.vercel.app
+
+## 🎨 Design System
+
+- **Typography**: Inter font family with bold gradients
+- **Colors**: Soft purple-pink-blue gradients
+- **Animations**: Smooth transitions (0.2s cubic-bezier) and gentle glow effects
+- **Components**: Glass-morphism cards with rounded borders
+- **Buttons**: Super-rounded (9999px) with gradient fills
+
+## 📦 Installation
 
 ```bash
+# Clone the repository
+git clone https://github.com/Divyesh-Thirukonda/hotel-quote-parser.git
+cd hotel-quote-parser
+
+# Install dependencies
+npm install
+
+# Set up environment variables
+cp .env.example .env.local
+# Add your OpenAI API key and Supabase credentials
+
+# Run the development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🗄️ Database Schema
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+The app uses a single `quotes` table in Supabase:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```sql
+CREATE TABLE quotes (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  hotel_name TEXT,
+  total NUMERIC,
+  guestrooms NUMERIC,
+  meeting NUMERIC,
+  food_beverage NUMERIC,
+  rooms INTEGER,
+  notes TEXT,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+```
 
-## Learn More
+## 🎯 Usage
 
-To learn more about Next.js, take a look at the following resources:
+1. **Upload a file** - Drag & drop or browse for PDF, image, or Word document
+2. **Or paste text** - Click "or paste text" to manually enter quote data
+3. **Parse** - AI extracts all financial data automatically
+4. **Review** - See giant gradient numbers and category breakdowns
+5. **Export** - Download as JSON or CSV
+6. **History** - View all past quotes in the history panel
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🛠️ Project Structure
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+hotel-quote-parser/
+├── app/
+│   ├── api/
+│   │   └── parse/route.ts       # OpenAI parsing endpoint
+│   ├── globals.css              # Typography-first design system
+│   ├── layout.tsx               # Root layout
+│   └── page.tsx                 # Main application page
+├── components/
+│   ├── ParsedResults.tsx        # Results display with gradient typography
+│   ├── QuoteHistory.tsx         # History sidebar with Supabase integration
+│   └── QuoteUploader.tsx        # File upload & text input
+├── lib/
+│   └── supabaseClient.ts        # Supabase configuration
+└── test-samples/                # Sample hotel quotes for testing
+```
 
-## Deploy on Vercel
+## 🧪 Testing
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Sample hotel quotes are provided in the `test-samples/` directory. Upload these to test the AI parsing capabilities.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🚢 Deployment
+
+Just run:
+
+```bash
+vercel
+```
+
+Make sure to add your environment variables in the Vercel dashboard.
+
+## 📝 License
+
+MIT
+
+---
+
+**Built with** OpenAI GPT-4 + Next.js + Supabase
