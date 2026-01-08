@@ -47,6 +47,7 @@ CRITICAL RULES:
 - If a value cannot be found, return null
 - Extract dates in ISO format (YYYY-MM-DD)
 - Default *_total fields to subtotal lines for each category (including all listed taxes/fees/service charges). Put the computed “all-in estimate” in additional_notes.
+- For grand total quote, if it cannot be computed because of missing categories, just return the computed value so far (like if guestroom_total is 100 and meeting_room_total is null, return 100).
 
 Return your response as a JSON object with these exact keys: reasoning, total_quote, guestroom_total, meeting_room_total, food_beverage_total, other_fees_total, hotel_name, check_in_date, check_out_date, number_of_rooms, number_of_guests, additional_notes`,
         input: `Please parse the following hotel quote and extract all relevant financial information:\n\n${content}`,
