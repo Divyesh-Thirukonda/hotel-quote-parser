@@ -221,12 +221,6 @@ export default function ParsedResults({ result, onNewParse }: ParsedResultsProps
                 );
             })}
 
-            {/* New Quote button at bottom */}
-            <div className="flex justify-center pt-4">
-                <button onClick={onNewParse} className="btn-primary px-8 py-3">
-                    Parse More Quotes
-                </button>
-            </div>
         </div>
     );
 }

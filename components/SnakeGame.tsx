@@ -27,6 +27,7 @@ export default function SnakeGame({ onClose }: SnakeGameProps) {
         // Snake initial state
         let snake = [{ x: 10, y: 10 }];
         let direction = { x: 0, y: 0 };
+        let lastDirection = { x: 0, y: 0 }; // Track actual last movement
         let food = { x: 15, y: 15 };
         let currentScore = 0;
         let gameRunning = false; // Don't start until first keypress
@@ -53,6 +54,7 @@ export default function SnakeGame({ onClose }: SnakeGameProps) {
                 // Reset everything
                 snake = [{ x: 10, y: 10 }];
                 direction = { x: 0, y: 0 };
+                lastDirection = { x: 0, y: 0 };
                 currentScore = 0;
                 setScore(0);
                 setGameOver(false);
@@ -62,20 +64,21 @@ export default function SnakeGame({ onClose }: SnakeGameProps) {
 
             switch (e.key) {
                 case 'ArrowUp':
-                    e.preventDefault(); // Prevent page scroll
-                    if (direction.y === 0) direction = { x: 0, y: -1 };
+                    e.preventDefault();
+                    // Prevent reversing - check last actual movement, not just direction
+                    if (lastDirection.y === 0) direction = { x: 0, y: -1 };
                     break;
                 case 'ArrowDown':
                     e.preventDefault();
-                    if (direction.y === 0) direction = { x: 0, y: 1 };
+                    if (lastDirection.y === 0) direction = { x: 0, y: 1 };
                     break;
                 case 'ArrowLeft':
                     e.preventDefault();
-                    if (direction.x === 0) direction = { x: -1, y: 0 };
+                    if (lastDirection.x === 0) direction = { x: -1, y: 0 };
                     break;
                 case 'ArrowRight':
                     e.preventDefault();
-                    if (direction.x === 0) direction = { x: 1, y: 0 };
+                    if (lastDirection.x === 0) direction = { x: 1, y: 0 };
                     break;
                 case 'Escape':
                     e.preventDefault();
@@ -98,6 +101,11 @@ export default function SnakeGame({ onClose }: SnakeGameProps) {
                 x: snake[0].x + direction.x,
                 y: snake[0].y + direction.y,
             };
+
+            // Update last direction AFTER we use the current direction
+            if (direction.x !== 0 || direction.y !== 0) {
+                lastDirection = { ...direction };
+            }
 
             // Check wall collision
             if (head.x < 0 || head.x >= tileCount || head.y < 0 || head.y >= tileCount) {
