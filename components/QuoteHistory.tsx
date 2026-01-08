@@ -7,9 +7,8 @@ export default function QuoteHistory() {
     const [quotes, setQuotes] = useState<Quote[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [selectedQuote, setSelectedQuote] = useState<Quote | null>(null);
-    const [viewingQuote, setViewingQuote] = useState<Quote | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
-    const [showReasoning, setShowReasoning] = useState(false); // For modal
+    const [showReasoning, setShowReasoning] = useState(false);
 
     const [copiedId, setCopiedId] = useState<string | null>(null);
 
@@ -116,7 +115,14 @@ export default function QuoteHistory() {
                     <div
                         key={quote.id}
                         className="bg-white/90 backdrop-blur-md rounded-2xl p-6 cursor-pointer transition-all hover:shadow-xl hover:scale-[1.02] border border-gray-200/50"
-                        onClick={() => setSelectedQuote(selectedQuote?.id === quote.id ? null : quote)}
+                        onClick={() => {
+                            if (selectedQuote?.id === quote.id) {
+                                setSelectedQuote(null);
+                            } else {
+                                setSelectedQuote(quote);
+                                setShowReasoning(false);
+                            }
+                        }}
                     >
                         <div className="flex items-start justify-between">
                             <div className="flex-1">
@@ -172,18 +178,6 @@ export default function QuoteHistory() {
                             </div>
                             {/* Action buttons */}
                             <div className="flex gap-2">
-                                {quote.parsing_status === 'success' && (
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            setViewingQuote(quote);
-                                            setShowReasoning(false);
-                                        }}
-                                        className="px-4 py-2 bg-purple-500/10 hover:bg-purple-500/20 text-purple-600 rounded-lg transition-colors font-medium"
-                                    >
-                                        👀
-                                    </button>
-                                )}
                                 <button
                                     onClick={(e) => {
                                         e.stopPropagation();
@@ -199,6 +193,35 @@ export default function QuoteHistory() {
                         {/* Expanded details */}
                         {selectedQuote?.id === quote.id && (
                             <div className="mt-6 pt-6 border-t border-gray-200">
+                                {/* Reasoning Section - Collapsible (Migrated from Modal) */}
+                                {quote.extracted_data?.reasoning && (
+                                    <div className="mb-6">
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setShowReasoning(!showReasoning);
+                                            }}
+                                            className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-amber-600 hover:text-amber-700 transition-colors mb-2"
+                                        >
+                                            <span>🧠</span> Calculation Logic
+                                            <span className="text-[10px] bg-amber-100 px-1.5 py-0.5 rounded-full">
+                                                {showReasoning ? 'Hide' : 'Show'}
+                                            </span>
+                                        </button>
+
+                                        {showReasoning && (
+                                            <div
+                                                className="bg-amber-50 p-4 rounded-xl border border-amber-100 animate-slide-down mb-4"
+                                                onClick={(e) => e.stopPropagation()} // Prevent closing when clicking content
+                                            >
+                                                <p className="text-gray-700 text-sm whitespace-pre-wrap leading-relaxed">
+                                                    {quote.extracted_data.reasoning}
+                                                </p>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
                                 <div className="flex items-center justify-between mb-3">
                                     <h5 className="text-sm font-semibold text-gray-700">📄 Original Quote Content</h5>
                                     <button
@@ -236,143 +259,6 @@ export default function QuoteHistory() {
                     <div className="text-6xl mb-4">🔍</div>
                     <h3 className="text-2xl font-bold text-gray-900 mb-2">No Results</h3>
                     <p className="text-gray-600">No quotes match your search term</p>
-                </div>
-            )}
-
-            {/* Hotel Profile Modal */}
-            {viewingQuote && (
-                <div
-                    className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-                    onClick={() => setViewingQuote(null)}
-                >
-                    <div
-                        className="bg-white/95 backdrop-blur-xl rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-gray-200/50 shadow-2xl"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        {/* Header */}
-                        <div className="sticky top-0 bg-white/95 backdrop-blur-xl border-b border-gray-200 p-6 flex items-center justify-between">
-                            <div>
-                                <h2 className="text-3xl font-black text-gray-900">
-                                    {viewingQuote.hotel_name || 'Unnamed Hotel'}
-                                </h2>
-                                <p className="text-gray-500 text-sm mt-1">
-                                    {new Date(viewingQuote.created_at).toLocaleDateString('en-US', {
-                                        year: 'numeric',
-                                        month: 'long',
-                                        day: 'numeric',
-                                        hour: '2-digit',
-                                        minute: '2-digit',
-                                    })}
-                                </p>
-                            </div>
-                            <button
-                                onClick={() => setViewingQuote(null)}
-                                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-xl font-semibold transition-colors"
-                            >
-                                ✕ Close
-                            </button>
-                        </div>
-
-                        {/* Content */}
-                        <div className="p-6 space-y-6">
-                            {/* Total Quote - Clean & Simple */}
-                            <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
-                                <p className="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wider">TOTAL QUOTE</p>
-                                <p className="text-4xl font-bold text-gray-900">
-                                    {formatCurrency(viewingQuote.total_quote)}
-                                </p>
-                            </div>
-
-                            {/* Category Breakdown */}
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                {/* Guestrooms */}
-                                <div className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm">
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                                            🛏️ Guestrooms
-                                        </p>
-                                    </div>
-                                    <p className="text-2xl font-bold text-gray-900">
-                                        {formatCurrency(viewingQuote.guestroom_total)}
-                                    </p>
-                                </div>
-
-                                {/* Meeting Rooms */}
-                                <div className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm">
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                                            📊 Meeting Rooms
-                                        </p>
-                                    </div>
-                                    <p className="text-2xl font-bold text-gray-900">
-                                        {formatCurrency(viewingQuote.meeting_room_total)}
-                                    </p>
-                                </div>
-
-                                {/* Food & Beverage */}
-                                <div className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm">
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                                            🍽️ Food & Beverage
-                                        </p>
-                                    </div>
-                                    <p className="text-2xl font-bold text-gray-900">
-                                        {formatCurrency(viewingQuote.food_beverage_total)}
-                                    </p>
-                                </div>
-                            </div>
-
-                            {/* @ts-ignore - reasoning might not be in Quote type yet but works at runtime */}
-                            {viewingQuote.reasoning && (
-                                <div className="mb-6">
-                                    <button
-                                        onClick={() => setShowReasoning(!showReasoning)}
-                                        className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-amber-600 hover:text-amber-700 transition-colors mb-2"
-                                    >
-                                        <span>🧠</span> AI Calculation Logic
-                                        <span className="text-[10px] bg-amber-100 px-1.5 py-0.5 rounded-full">
-                                            {showReasoning ? 'Hide' : 'Show'}
-                                        </span>
-                                    </button>
-
-                                    {showReasoning && (
-                                        <div className="bg-amber-50 p-4 rounded-xl border border-amber-100 animate-slide-down">
-                                            <p className="text-gray-700 text-sm whitespace-pre-wrap leading-relaxed">
-                                                {/* @ts-ignore */}
-                                                {viewingQuote.reasoning}
-                                            </p>
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-
-                            {/* Original Content */}
-                            <div>
-                                <div className="flex items-center justify-between mb-3">
-                                    <h3 className="text-lg font-bold text-gray-900">📄 Original Quote Content</h3>
-                                    <button
-                                        onClick={() => handleCopy(viewingQuote.original_content, 'modal-' + viewingQuote.id)}
-                                        className="text-sm font-medium text-purple-600 hover:text-purple-700 flex items-center gap-1 transition-colors px-3 py-1.5 rounded-lg hover:bg-purple-50"
-                                    >
-                                        {copiedId === 'modal-' + viewingQuote.id ? (
-                                            <>
-                                                <span>✓</span> Copied!
-                                            </>
-                                        ) : (
-                                            <>
-                                                <span>📋</span> Copy Full Text
-                                            </>
-                                        )}
-                                    </button>
-                                </div>
-                                <div className="bg-gray-50 rounded-xl p-6 max-h-96 overflow-auto border border-gray-200">
-                                    <pre className="text-gray-700 text-sm whitespace-pre-wrap font-mono leading-relaxed">
-                                        {viewingQuote.original_content}
-                                    </pre>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             )}
         </div>

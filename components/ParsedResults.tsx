@@ -154,7 +154,7 @@ export default function ParsedResults({ result, onNewParse }: ParsedResultsProps
                                     onClick={() => setShowReasoning(!showReasoning)}
                                     className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-amber-600 hover:text-amber-700 transition-colors mb-2"
                                 >
-                                    <span>🧠</span> AI Calculation Logic
+                                    <span>🧠</span> Calculation Logic
                                     <span className="text-[10px] bg-amber-100 px-1.5 py-0.5 rounded-full">
                                         {showReasoning ? 'Hide' : 'Show'}
                                     </span>

@@ -44,7 +44,7 @@ CRITICAL RULES:
 - All monetary amounts should be numbers (e.g., 1234.56, not "$1,234.56")
 - If a value cannot be found, return null
 - Extract dates in ISO format (YYYY-MM-DD)
-- Default *_total fields to pre-tax / pre-service unless the proposal explicitly says taxes/service are included. Then put the computed “all-in estimate” in additional_notes.
+- Default *_total fields to subtotal lines for each category (including all listed taxes/fees/service charges). Put the computed “all-in estimate” in additional_notes.
 
 Return your response as a JSON object with these exact keys: reasoning, total_quote, guestroom_total, meeting_room_total, food_beverage_total, hotel_name, check_in_date, check_out_date, number_of_rooms, number_of_guests, additional_notes`,
         input: `Please parse the following hotel quote and extract all relevant financial information:\n\n${content}`,
@@ -129,6 +129,7 @@ CRITICAL RULES:
 - All monetary amounts should be numbers only
 - If a value cannot be found, return null
 - Be thorough in reading all text in the image
+- Default *_total fields to subtotal lines for each category (including all listed taxes/fees/service charges). Put the computed “all-in estimate” in additional_notes.
 
 Return your response as a JSON object with these exact keys: reasoning, total_quote, guestroom_total, meeting_room_total, food_beverage_total, hotel_name, check_in_date, check_out_date, number_of_rooms, number_of_guests, additional_notes`,
         input: [
