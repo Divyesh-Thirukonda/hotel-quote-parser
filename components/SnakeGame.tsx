@@ -29,7 +29,7 @@ export default function SnakeGame({ onClose }: SnakeGameProps) {
         let direction = { x: 0, y: 0 };
         let food = { x: 15, y: 15 };
         let currentScore = 0;
-        let gameRunning = true;
+        let gameRunning = false; // Don't start until first keypress
 
         // Generate random food position
         const generateFood = () => {
@@ -48,21 +48,35 @@ export default function SnakeGame({ onClose }: SnakeGameProps) {
 
         // Handle keyboard input
         const handleKeyPress = (e: KeyboardEvent) => {
+            // Start game on first arrow key
+            if (!gameRunning && ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+                gameRunning = true;
+                setGameOver(false);
+            }
+
             switch (e.key) {
                 case 'ArrowUp':
+                    e.preventDefault(); // Prevent page scroll
                     if (direction.y === 0) direction = { x: 0, y: -1 };
                     break;
                 case 'ArrowDown':
+                    e.preventDefault();
                     if (direction.y === 0) direction = { x: 0, y: 1 };
                     break;
                 case 'ArrowLeft':
+                    e.preventDefault();
                     if (direction.x === 0) direction = { x: -1, y: 0 };
                     break;
                 case 'ArrowRight':
+                    e.preventDefault();
                     if (direction.x === 0) direction = { x: 1, y: 0 };
                     break;
                 case 'Escape':
-                    onClose?.();
+                    e.preventDefault();
+                    if (onClose) {
+                        gameRunning = false;
+                        onClose();
+                    }
                     break;
             }
         };
@@ -166,11 +180,16 @@ export default function SnakeGame({ onClose }: SnakeGameProps) {
                     Score: {score}
                 </p>
                 <p className="text-sm text-gray-300">
-                    Use arrow keys • ESC to close
+                    {gameOver
+                        ? 'Game Over! Press arrow key to restart'
+                        : score === 0
+                            ? 'Press any arrow key to start'
+                            : 'Use arrow keys • ESC to close'
+                    }
                 </p>
                 {gameOver && (
                     <p className="text-amber-400 font-semibold mt-2">
-                        Game Over! Press any key to restart
+                        Score: {score}
                     </p>
                 )}
             </div>

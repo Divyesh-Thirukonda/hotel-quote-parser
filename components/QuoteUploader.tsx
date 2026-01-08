@@ -269,7 +269,7 @@ Grand Ballroom = $2,500.00
                                 Your files are being parsed
                             </p>
                         </div>
-                        <SnakeGame />
+                        <SnakeGame onClose={() => setIsLoading(false)} />
                     </div>
                 </div>
             )}
