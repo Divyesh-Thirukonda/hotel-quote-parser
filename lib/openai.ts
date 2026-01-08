@@ -12,6 +12,7 @@ const QuoteSchema = z.object({
     guestroom_total: z.number().nullable().describe('Total cost for all guestrooms'),
     meeting_room_total: z.number().nullable().describe('Total cost for all meeting/conference rooms'),
     food_beverage_total: z.number().nullable().describe('Total cost for all food and beverage items'),
+    other_fees_total: z.number().nullable().describe('Total cost for any other miscellaneous items (resort fees, parking, AV, admin fees, etc.) not included in the above categories.'),
     hotel_name: z.string().nullable().describe('Name of the hotel'),
     check_in_date: z.string().nullable().describe('Check-in date in ISO format'),
     check_out_date: z.string().nullable().describe('Check-out date in ISO format'),
@@ -34,6 +35,7 @@ Your task is to extract the following key data points from hotel quote emails:
 2. Guestroom Total - Total cost for all guestrooms
 3. Meeting Room Total - Total cost for all meeting/conference rooms
 4. Food and Beverage Total - Total cost for all food and beverage
+5. Other Fees Total - Total cost for any other miscellaneous items (resort fees, parking, AV, admin fees, etc.) not included in the above categories.
 
 Also extract any additional relevant information like hotel name, dates, number of rooms, and number of guests.
 
@@ -46,7 +48,7 @@ CRITICAL RULES:
 - Extract dates in ISO format (YYYY-MM-DD)
 - Default *_total fields to subtotal lines for each category (including all listed taxes/fees/service charges). Put the computed “all-in estimate” in additional_notes.
 
-Return your response as a JSON object with these exact keys: reasoning, total_quote, guestroom_total, meeting_room_total, food_beverage_total, hotel_name, check_in_date, check_out_date, number_of_rooms, number_of_guests, additional_notes`,
+Return your response as a JSON object with these exact keys: reasoning, total_quote, guestroom_total, meeting_room_total, food_beverage_total, other_fees_total, hotel_name, check_in_date, check_out_date, number_of_rooms, number_of_guests, additional_notes`,
         input: `Please parse the following hotel quote and extract all relevant financial information:\n\n${content}`,
     });
 
@@ -119,6 +121,7 @@ Extract the following key data points:
 2. Guestroom Total - Total cost for all guestrooms
 3. Meeting Room Total - Total cost for all meeting/conference rooms
 4. Food and Beverage Total - Total cost for all food and beverage
+5. Other Fees Total - Total cost for any other miscellaneous items (resort fees, parking, AV, admin fees, etc.) not included in the above categories.
 
 Also extract hotel name, dates, number of rooms, and number of guests.
 
@@ -131,7 +134,7 @@ CRITICAL RULES:
 - Be thorough in reading all text in the image
 - Default *_total fields to subtotal lines for each category (including all listed taxes/fees/service charges). Put the computed “all-in estimate” in additional_notes.
 
-Return your response as a JSON object with these exact keys: reasoning, total_quote, guestroom_total, meeting_room_total, food_beverage_total, hotel_name, check_in_date, check_out_date, number_of_rooms, number_of_guests, additional_notes`,
+Return your response as a JSON object with these exact keys: reasoning, total_quote, guestroom_total, meeting_room_total, food_beverage_total, other_fees_total, hotel_name, check_in_date, check_out_date, number_of_rooms, number_of_guests, additional_notes`,
         input: [
             {
                 type: 'text',

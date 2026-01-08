@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-
 import { Quote } from '@/lib/supabase';
+import { formatCurrency, formatDate, exportAsJSON, exportAsCSV } from '@/lib/export-utils';
 
 interface ParsedResultsProps {
     result: {
@@ -16,57 +16,7 @@ export default function ParsedResults({ result, onNewParse }: ParsedResultsProps
     const { quote, parsed } = result;
     const [showReasoning, setShowReasoning] = useState(false);
 
-    const formatCurrency = (value: number | null) => {
-        if (value === null) return 'N/A';
-        return new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: 'USD',
-        }).format(value);
-    };
-
-    const formatDate = (dateString: string | null) => {
-        if (!dateString) return 'N/A';
-        return new Date(dateString).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-        });
-    };
-
-    const exportAsJSON = () => {
-        const dataStr = JSON.stringify(parsed, null, 2);
-        const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
-        const exportFileDefaultName = `hotel-quote-${quote.id}.json`;
-
-        const linkElement = document.createElement('a');
-        linkElement.setAttribute('href', dataUri);
-        linkElement.setAttribute('download', exportFileDefaultName);
-        linkElement.click();
-    };
-
-    const exportAsCSV = () => {
-        const csvRows = [
-            ['Field', 'Value'],
-            ['Total Quote', formatCurrency(parsed.total_quote)],
-            ['Guestroom Total', formatCurrency(parsed.guestroom_total)],
-            ['Meeting Room Total', formatCurrency(parsed.meeting_room_total)],
-            ['Food & Beverage Total', formatCurrency(parsed.food_beverage_total)],
-            ['Hotel Name', parsed.hotel_name || 'N/A'],
-            ['Check-In', formatDate(parsed.check_in_date)],
-            ['Check-Out', formatDate(parsed.check_out_date)],
-            ['Number of Rooms', parsed.number_of_rooms || 'N/A'],
-            ['Number of Guests', parsed.number_of_guests || 'N/A'],
-        ];
-
-        const csvContent = csvRows.map((row) => row.join(',')).join('\n');
-        const dataUri = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvContent);
-        const exportFileDefaultName = `hotel-quote-${quote.id}.csv`;
-
-        const linkElement = document.createElement('a');
-        linkElement.setAttribute('href', dataUri);
-        linkElement.setAttribute('download', exportFileDefaultName);
-        linkElement.click();
-    };
+    // No local formatters or export functions needed!
 
     return (
         <div className="space-y-6 animate-slide-up">
@@ -94,6 +44,27 @@ export default function ParsedResults({ result, onNewParse }: ParsedResultsProps
                                 {formatCurrency(parsed.total_quote)}
                             </p>
                         </div>
+                    </div>
+                    {/* Actions */}
+                    <div className="flex justify-end gap-3 mt-8 pt-6 border-t border-gray-100">
+                        <button
+                            onClick={() => exportAsCSV(quote)}
+                            className="flex items-center gap-2 px-4 py-2 border border-blue-200 text-blue-700 rounded-lg hover:bg-blue-50 transition-colors font-semibold"
+                        >
+                            <span>📊</span> Export CSV
+                        </button>
+                        <button
+                            onClick={() => exportAsJSON(quote)}
+                            className="flex items-center gap-2 px-4 py-2 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-semibold"
+                        >
+                            <span>{'{ }'}</span> Export JSON
+                        </button>
+                        <button
+                            onClick={onNewParse}
+                            className="flex items-center gap-2 px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors font-semibold shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
+                        >
+                            <span>✨</span> New Quote
+                        </button>
                     </div>
                 </div>
 
@@ -124,7 +95,7 @@ export default function ParsedResults({ result, onNewParse }: ParsedResultsProps
                 </div>
 
                 {/* Food & Beverage Total */}
-                <div className="md:col-span-2 bg-white rounded-xl p-5 border border-gray-200 shadow-sm">
+                <div className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm">
                     <div>
                         <p className="text-gray-500 text-xs font-semibold uppercase tracking-wider mb-1">
                             🍽️ Food & Beverage
@@ -134,6 +105,20 @@ export default function ParsedResults({ result, onNewParse }: ParsedResultsProps
                         </p>
                     </div>
                 </div>
+
+                {/* Other Fees Total - Show only if > 0 */}
+                {(parsed.other_fees_total || 0) > 0 && (
+                    <div className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm">
+                        <div>
+                            <p className="text-gray-500 text-xs font-semibold uppercase tracking-wider mb-1">
+                                🧾 Other Fees
+                            </p>
+                            <p className="text-2xl font-bold text-gray-900">
+                                {formatCurrency(parsed.other_fees_total)}
+                            </p>
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* Additional information */}

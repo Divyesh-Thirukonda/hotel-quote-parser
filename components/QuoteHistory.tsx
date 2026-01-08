@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Quote } from '@/lib/supabase';
+import { formatCurrency, formatDate, exportAsJSON, exportAsCSV } from '@/lib/export-utils';
 
 export default function QuoteHistory() {
     const [quotes, setQuotes] = useState<Quote[]>([]);
@@ -57,14 +58,6 @@ export default function QuoteHistory() {
         } catch (error) {
             console.error('Failed to delete quote:', error);
         }
-    };
-
-    const formatCurrency = (value: number | null) => {
-        if (value === null) return 'N/A';
-        return new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: 'USD',
-        }).format(value);
     };
 
     const filteredQuotes = quotes.filter((quote) => {
@@ -174,6 +167,15 @@ export default function QuoteHistory() {
                                             {formatCurrency(quote.food_beverage_total)}
                                         </p>
                                     </div>
+                                    {/* Other Fees - Optional Display */}
+                                    {(quote.extracted_data?.other_fees_total || 0) > 0 && (
+                                        <div>
+                                            <p className="text-gray-500 text-xs font-medium">Other</p>
+                                            <p className="text-gray-900 font-bold">
+                                                {formatCurrency(quote.extracted_data.other_fees_total)}
+                                            </p>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                             {/* Action buttons */}
@@ -224,23 +226,45 @@ export default function QuoteHistory() {
 
                                 <div className="flex items-center justify-between mb-3">
                                     <h5 className="text-sm font-semibold text-gray-700">📄 Original Quote Content</h5>
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleCopy(quote.original_content, quote.id);
-                                        }}
-                                        className="text-xs font-medium text-purple-600 hover:text-purple-700 flex items-center gap-1 transition-colors px-2 py-1 rounded-md hover:bg-purple-50"
-                                    >
-                                        {copiedId === quote.id ? (
-                                            <>
-                                                <span>✓</span> Copied!
-                                            </>
-                                        ) : (
-                                            <>
-                                                <span>📋</span> Copy Text
-                                            </>
-                                        )}
-                                    </button>
+
+                                    <div className="flex items-center gap-2">
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                exportAsCSV(quote);
+                                            }}
+                                            className="text-xs font-medium text-gray-600 hover:text-blue-600 flex items-center gap-1 transition-colors px-2 py-1 rounded-md hover:bg-blue-50 border border-transparent hover:border-blue-100"
+                                        >
+                                            <span>📊</span> CSV
+                                        </button>
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                exportAsJSON(quote);
+                                            }}
+                                            className="text-xs font-medium text-gray-600 hover:text-amber-600 flex items-center gap-1 transition-colors px-2 py-1 rounded-md hover:bg-amber-50 border border-transparent hover:border-amber-100"
+                                        >
+                                            <span>{"{ }"}</span> JSON
+                                        </button>
+                                        <div className="w-px h-4 bg-gray-200 mx-1"></div>
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleCopy(quote.original_content, quote.id);
+                                            }}
+                                            className="text-xs font-medium text-purple-600 hover:text-purple-700 flex items-center gap-1 transition-colors px-2 py-1 rounded-md hover:bg-purple-50"
+                                        >
+                                            {copiedId === quote.id ? (
+                                                <>
+                                                    <span>✓</span> Copied!
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <span>📋</span> Copy Text
+                                                </>
+                                            )}
+                                        </button>
+                                    </div>
                                 </div>
                                 <div className="bg-gray-50 rounded-lg p-4 max-h-64 overflow-auto border border-gray-200">
                                     <pre className="text-gray-700 text-xs whitespace-pre-wrap font-mono leading-relaxed">
