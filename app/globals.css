@@ -1,26 +1,191 @@
+/* Premium Typography - MUST be before tailwindcss import */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* Smooth transitions everywhere */
+* {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+/* Custom animations - subtle and smug */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes gentleGlow {
+
+  0%,
+  100% {
+    box-shadow: 0 0 20px rgba(168, 85, 247, 0.15);
+  }
+
+  50% {
+    box-shadow: 0 0 30px rgba(236, 72, 153, 0.2);
+  }
+}
+
+/* Typography-first utility classes */
+.gradient-text {
+  background: linear-gradient(135deg, #a855f7 0%, #ec4899 50%, #3b82f6 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(20px);
+  border-radius: 2rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+}
+
+.glass-card:hover {
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+}
+
+/* Super-rounded buttons - Gen-Z friendly WITHOUT emojis */
+.btn-primary {
+  background: linear-gradient(135deg, #a855f7 0%, #ec4899 50%, #3b82f6 100%);
+  color: white;
+  font-weight: 700;
+  font-size: 1rem;
+  border-radius: 9999px;
+  padding: 0.875rem 2rem;
+  box-shadow: 0 4px 14px rgba(168, 85, 247, 0.25);
+  border: none;
+}
+
+.btn-primary:hover {
+  box-shadow: 0 6px 20px rgba(168, 85, 247, 0.35);
+  transform: translateY(-2px);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.9);
+  color: #6b7280;
+  font-weight: 600;
+  font-size: 0.95rem;
+  border-radius: 9999px;
+  padding: 0.75rem 1.75rem;
+  border: 1px solid rgba(229, 231, 235, 0.8);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.btn-secondary:hover {
+  background: white;
+  border-color: rgba(168, 85, 247, 0.3);
+  box-shadow: 0 4px 12px rgba(168, 85, 247, 0.1);
+  transform: translateY(-1px);
+}
+
+/* Subtle glow for special elements */
+.gentle-glow {
+  animation: gentleGlow 3s ease-in-out infinite;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.6s ease-out;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.7s ease-out;
+}
+
+/* Base styles - soft gradient background */
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: linear-gradient(to bottom right,
+      rgba(250, 245, 255, 1),
+      rgba(252, 231, 243, 1),
+      rgba(239, 246, 255, 1));
+  color: #1f2937;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Category accents - soft colors */
+.category-total {
+  border-left: 4px solid rgba(168, 85, 247, 0.6);
+  background: linear-gradient(to right, rgba(168, 85, 247, 0.03), transparent);
+}
+
+.category-total:hover {
+  border-left-color: rgba(168, 85, 247, 0.8);
+  background: linear-gradient(to right, rgba(168, 85, 247, 0.05), transparent);
+}
+
+.category-rooms {
+  border-left: 4px solid rgba(59, 130, 246, 0.6);
+  background: linear-gradient(to right, rgba(59, 130, 246, 0.03), transparent);
+}
+
+.category-rooms:hover {
+  border-left-color: rgba(59, 130, 246, 0.8);
+  background: linear-gradient(to right, rgba(59, 130, 246, 0.05), transparent);
+}
+
+.category-meeting {
+  border-left: 4px solid rgba(249, 115, 22, 0.6);
+  background: linear-gradient(to right, rgba(249, 115, 22, 0.03), transparent);
+}
+
+.category-meeting:hover {
+  border-left-color: rgba(249, 115, 22, 0.8);
+  background: linear-gradient(to right, rgba(249, 115, 22, 0.05), transparent);
+}
+
+.category-food {
+  border-left: 4px solid rgba(236, 72, 153, 0.6);
+  background: linear-gradient(to right, rgba(236, 72, 153, 0.03), transparent);
+}
+
+.category-food:hover {
+  border-left-color: rgba(236, 72, 153, 0.8);
+  background: linear-gradient(to right, rgba(236, 72, 153, 0.05), transparent);
+}
+
+/* Hover effects on interactive elements */
+button,
+a {
+  cursor: pointer;
+}
+
+input:focus,
+textarea:focus {
+  outline: none;
+  border-color: rgba(168, 85, 247, 0.5);
+  box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.1);
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
 }

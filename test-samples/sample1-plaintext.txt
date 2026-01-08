@@ -1,0 +1,44 @@
+SAMPLE 1: Plain Text Quote
+==========================
+
+Grand Plaza Hotel
+Event Quote #12345
+
+Dear Event Planner,
+
+Thank you for considering the Grand Plaza Hotel for your upcoming conference. Please find our quote below:
+
+EVENT DETAILS:
+Event Dates: March 15-17, 2026
+Number of Attendees: 150
+
+GUESTROOM ACCOMMODATIONS:
+75 Standard King Rooms x 2 nights @ $189.00 per night = $28,350.00
+Group Rate includes: WiFi, Fitness Center Access
+Tax (14.5%): $4,110.75
+Guestroom Subtotal: $32,460.75
+
+MEETING SPACE:
+Grand Ballroom - March 15 (Full Day) = $2,500.00
+Breakout Room A - March 16 (Full Day) = $750.00
+Breakout Room B - March 16 (Full Day) = $750.00
+AV Equipment Package = $1,200.00
+Meeting Space Subtotal: $5,200.00
+
+FOOD & BEVERAGE:
+Continental Breakfast - 150 guests x 3 days @ $28.00 = $12,600.00
+Lunch Buffet - 150 guests x 2 days @ $45.00 = $13,500.00
+Coffee Breaks - 150 guests x 6 breaks @ $15.00 = $13,500.00
+Reception Dinner - 150 guests @ $85.00 = $12,750.00
+Service Charge (22%): $11,494.00
+Tax (8.5%): $4,809.40
+F&B Subtotal: $68,653.40
+
+TOTAL EVENT COST: $106,314.15
+
+This quote is valid for 30 days. A 25% deposit is required upon signing.
+
+Best regards,
+Sarah Johnson
+Sales Manager
+Grand Plaza Hotel
