@@ -153,11 +153,13 @@ export default function QuoteUploader({ onParseComplete }: QuoteUploaderProps) {
                     </div>
                     <div>
                         <h3 className="text-2xl font-semibold text-slate-900 mb-2">
-                            {isLoading
-                                ? 'Analyzing your quote...'
-                                : isDragActive
-                                    ? 'Drop to upload'
-                                    : 'Drop your hotel quote here'}
+                            {isLoading ? (
+                                <span className="loading-dots">Analyzing your quote</span>
+                            ) : isDragActive ? (
+                                'Drop to upload'
+                            ) : (
+                                'Drop your hotel quote here'
+                            )}
                         </h3>
                         <p className="text-slate-500">
                             {isLoading

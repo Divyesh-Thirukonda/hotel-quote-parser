@@ -144,6 +144,17 @@ export default function ParsedResults({ result, onNewParse }: ParsedResultsProps
                         <h4 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
                             <span>📝</span> Additional Details
                         </h4>
+
+                        {/* Reasoning Section */}
+                        {parsed.reasoning && (
+                            <div className="bg-amber-50 p-4 rounded-xl border border-amber-100 mb-4">
+                                <p className="text-amber-600 text-xs font-bold uppercase tracking-wide mb-2 flex items-center gap-1">
+                                    <span>🧠</span> AI Calculation Logic
+                                </p>
+                                <p className="text-gray-700 text-sm whitespace-pre-wrap leading-relaxed">{parsed.reasoning}</p>
+                            </div>
+                        )}
+
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                             {parsed.check_in_date && (
                                 <div className="bg-gray-50 p-3 rounded-xl">

@@ -1,3 +1,11 @@
+// Suppress deprecation warning from legacy pdf-parse library
+const originalEmitWarning = process.emitWarning;
+process.emitWarning = (warning, ...args: any[]) => {
+    if (typeof warning === 'string' && warning.includes('Buffer()')) return;
+    if (args.length > 0 && args[0] === 'DeprecationWarning' && warning.toString().includes('Buffer()')) return;
+    return (originalEmitWarning as any).apply(process, [warning, ...args]);
+};
+
 // @ts-ignore
 const pdfParse = require('pdf-parse/lib/pdf-parse.js');
 import mammoth from 'mammoth';

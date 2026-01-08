@@ -53,6 +53,42 @@ select,
   }
 }
 
+@keyframes dotLoading {
+
+  0%,
+  20% {
+    color: rgba(0, 0, 0, 0);
+    text-shadow:
+      .25em 0 0 rgba(0, 0, 0, 0),
+      .5em 0 0 rgba(0, 0, 0, 0);
+  }
+
+  40% {
+    color: rgb(75 85 99);
+    text-shadow:
+      .25em 0 0 rgba(0, 0, 0, 0),
+      .5em 0 0 rgba(0, 0, 0, 0);
+  }
+
+  60% {
+    text-shadow:
+      .25em 0 0 rgb(75 85 99),
+      .5em 0 0 rgba(0, 0, 0, 0);
+  }
+
+  80%,
+  100% {
+    text-shadow:
+      .25em 0 0 rgb(75 85 99),
+      .5em 0 0 rgb(75 85 99);
+  }
+}
+
+.loading-dots::after {
+  content: ' .';
+  animation: dotLoading 1.5s steps(5, end) infinite;
+}
+
 /* Typography-first utility classes */
 .gradient-text {
   background: linear-gradient(135deg, #a855f7 0%, #ec4899 50%, #3b82f6 100%);
