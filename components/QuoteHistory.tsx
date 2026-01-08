@@ -66,19 +66,19 @@ export default function QuoteHistory() {
 
     if (isLoading) {
         return (
-            <div className="glass-card p-12 text-center">
+            <div className="bg-white/90 backdrop-blur-md rounded-2xl p-12 text-center border border-gray-200/50">
                 <div className="animate-spin h-12 w-12 border-4 border-indigo-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-                <p className="text-white/60">Loading quote history...</p>
+                <p className="text-gray-600">Loading quote history...</p>
             </div>
         );
     }
 
     if (quotes.length === 0) {
         return (
-            <div className="glass-card p-12 text-center">
+            <div className="bg-white/90 backdrop-blur-md rounded-2xl p-12 text-center border border-gray-200/50">
                 <div className="text-6xl mb-4">📭</div>
-                <h3 className="text-2xl font-bold text-white mb-2">No Quotes Yet</h3>
-                <p className="text-white/60">Parse your first hotel quote to see it here!</p>
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">No Quotes Yet</h3>
+                <p className="text-gray-600">Parse your first hotel quote to see it here!</p>
             </div>
         );
     }
@@ -86,13 +86,14 @@ export default function QuoteHistory() {
     return (
         <div className="space-y-6">
             {/* Search bar */}
-            <div className="bg-white/90 backdrop-blur-md rounded-2xl p-4 border border-gray-200/50">
+            <div className="bg-white/90 backdrop-blur-md rounded-2xl p-4 border border-gray-200/50 flex items-center gap-3">
+                <span className="text-gray-400 text-xl">🔍</span>
                 <input
                     type="text"
-                    placeholder="🔍 Search by hotel name or total..."
+                    placeholder="Search by hotel name or total..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full px-4 py-3 bg-transparent border-none outline-none text-gray-900 placeholder-gray-400 text-base"
+                    className="flex-1 py-3 bg-transparent border-none outline-none text-gray-900 placeholder-gray-400 text-base"
                 />
             </div>
 
@@ -198,10 +199,10 @@ export default function QuoteHistory() {
             </div>
 
             {filteredQuotes.length === 0 && searchTerm && (
-                <div className="glass-card p-12 text-center">
+                <div className="bg-white/90 backdrop-blur-md rounded-2xl p-12 text-center border border-gray-200/50">
                     <div className="text-6xl mb-4">🔍</div>
-                    <h3 className="text-2xl font-bold text-white mb-2">No Results</h3>
-                    <p className="text-white/60">No quotes match your search term</p>
+                    <h3 className="text-2xl font-bold text-gray-900 mb-2">No Results</h3>
+                    <p className="text-gray-600">No quotes match your search term</p>
                 </div>
             )}
 
