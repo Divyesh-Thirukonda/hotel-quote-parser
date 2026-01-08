@@ -14,12 +14,14 @@ export default function QuoteUploader({ onParseComplete }: QuoteUploaderProps) {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [uploadProgress, setUploadProgress] = useState<{ fileName: string; status: 'uploading' | 'processing' | 'done' | 'error' }[]>([]);
+    const [showSnakeGame, setShowSnakeGame] = useState(false);
 
     const onDrop = useCallback(
         async (acceptedFiles: File[]) => {
             if (acceptedFiles.length === 0) return;
 
             setIsLoading(true);
+            setShowSnakeGame(true);
             setError(null);
             setUploadProgress(acceptedFiles.map(f => ({ fileName: f.name, status: 'uploading' })));
 
@@ -117,6 +119,7 @@ export default function QuoteUploader({ onParseComplete }: QuoteUploaderProps) {
         }
 
         setIsLoading(true);
+        setShowSnakeGame(true); // Show Snake game when loading starts
         setError(null);
 
         try {
@@ -131,18 +134,21 @@ export default function QuoteUploader({ onParseComplete }: QuoteUploaderProps) {
                 }),
             });
 
-            const result = await response.json();
+            const data = await response.json();
 
-            if (!result.success) {
-                throw new Error(result.error || 'Failed to parse quote');
+            if (!data.success) {
+                throw new Error(data.error || 'Failed to parse quote');
             }
 
-            onParseComplete(result);
-            setPastedContent('');
-        } catch (err: any) {
-            setError(err.message);
-        } finally {
+            onParseComplete(data);
+            setPastedContent(''); // Clear the textarea
             setIsLoading(false);
+            setShowSnakeGame(false);
+        } catch (err: any) {
+            console.error('Paste parse error:', err);
+            setError(err.message || 'Failed to process content');
+            setIsLoading(false);
+            setShowSnakeGame(false);
         }
     };
 
@@ -258,7 +264,7 @@ Grand Ballroom = $2,500.00
 
 
             {/* Snake Game Modal - Show while loading */}
-            {isLoading && (
+            {showSnakeGame && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm animate-fade-in">
                     <div className="relative">
                         <div className="text-center mb-6">
@@ -266,10 +272,10 @@ Grand Ballroom = $2,500.00
                                 While You Wait... 🐍
                             </h3>
                             <p className="text-gray-300">
-                                Your files are being parsed
+                                Your files are being parsed by AI
                             </p>
                         </div>
-                        <SnakeGame onClose={() => setIsLoading(false)} />
+                        <SnakeGame onClose={() => setShowSnakeGame(false)} />
                     </div>
                 </div>
             )}
