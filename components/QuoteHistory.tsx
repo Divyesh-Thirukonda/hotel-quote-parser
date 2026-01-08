@@ -7,6 +7,7 @@ export default function QuoteHistory() {
     const [quotes, setQuotes] = useState<Quote[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [selectedQuote, setSelectedQuote] = useState<Quote | null>(null);
+    const [viewingQuote, setViewingQuote] = useState<Quote | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
@@ -155,15 +156,29 @@ export default function QuoteHistory() {
                                     </div>
                                 </div>
                             </div>
-                            <button
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    deleteQuote(quote.id);
-                                }}
-                                className="ml-4 px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg transition-colors"
-                            >
-                                🗑️
-                            </button>
+                            {/* Action buttons */}
+                            <div className="flex gap-2">
+                                {quote.parsing_status === 'success' && (
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setViewingQuote(quote);
+                                        }}
+                                        className="px-4 py-2 bg-purple-500/10 hover:bg-purple-500/20 text-purple-600 rounded-lg transition-colors font-medium"
+                                    >
+                                        👀
+                                    </button>
+                                )}
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        deleteQuote(quote.id);
+                                    }}
+                                    className="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg transition-colors"
+                                >
+                                    🗑️
+                                </button>
+                            </div>
                         </div>
 
                         {/* Expanded details */}
@@ -187,6 +202,100 @@ export default function QuoteHistory() {
                     <div className="text-6xl mb-4">🔍</div>
                     <h3 className="text-2xl font-bold text-white mb-2">No Results</h3>
                     <p className="text-white/60">No quotes match your search term</p>
+                </div>
+            )}
+
+            {/* Hotel Profile Modal */}
+            {viewingQuote && (
+                <div
+                    className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+                    onClick={() => setViewingQuote(null)}
+                >
+                    <div
+                        className="bg-white/95 backdrop-blur-xl rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-gray-200/50 shadow-2xl"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {/* Header */}
+                        <div className="sticky top-0 bg-white/95 backdrop-blur-xl border-b border-gray-200 p-6 flex items-center justify-between">
+                            <div>
+                                <h2 className="text-3xl font-black text-gray-900">
+                                    {viewingQuote.hotel_name || 'Unnamed Hotel'}
+                                </h2>
+                                <p className="text-gray-500 text-sm mt-1">
+                                    {new Date(viewingQuote.created_at).toLocaleDateString('en-US', {
+                                        year: 'numeric',
+                                        month: 'long',
+                                        day: 'numeric',
+                                        hour: '2-digit',
+                                        minute: '2-digit',
+                                    })}
+                                </p>
+                            </div>
+                            <button
+                                onClick={() => setViewingQuote(null)}
+                                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-xl font-semibold transition-colors"
+                            >
+                                ✕ Close
+                            </button>
+                        </div>
+
+                        {/* Content */}
+                        <div className="p-6 space-y-8">
+                            {/* Total Quote - Giant Gradient */}
+                            <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-8 border border-purple-200/50 gentle-glow">
+                                <p className="text-sm font-semibold text-gray-600 mb-2">TOTAL QUOTE</p>
+                                <p className="text-6xl font-black gradient-text">
+                                    {formatCurrency(viewingQuote.total_quote)}
+                                </p>
+                            </div>
+
+                            {/* Category Breakdown */}
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                {/* Guestrooms */}
+                                <div className="category-rooms bg-white/90 rounded-2xl p-6 border border-gray-200">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <span className="text-2xl">🛏️</span>
+                                        <p className="text-sm font-semibold text-gray-600">GUESTROOMS</p>
+                                    </div>
+                                    <p className="text-3xl font-bold text-blue-600">
+                                        {formatCurrency(viewingQuote.guestroom_total)}
+                                    </p>
+                                </div>
+
+                                {/* Meeting Rooms */}
+                                <div className="category-meeting bg-white/90 rounded-2xl p-6 border border-gray-200">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <span className="text-2xl">📊</span>
+                                        <p className="text-sm font-semibold text-gray-600">MEETING ROOMS</p>
+                                    </div>
+                                    <p className="text-3xl font-bold text-orange-600">
+                                        {formatCurrency(viewingQuote.meeting_room_total)}
+                                    </p>
+                                </div>
+
+                                {/* Food & Beverage */}
+                                <div className="category-food bg-white/90 rounded-2xl p-6 border border-gray-200">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <span className="text-2xl">🍽️</span>
+                                        <p className="text-sm font-semibold text-gray-600">FOOD & BEVERAGE</p>
+                                    </div>
+                                    <p className="text-3xl font-bold text-pink-600">
+                                        {formatCurrency(viewingQuote.food_beverage_total)}
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Original Content */}
+                            <div>
+                                <h3 className="text-lg font-bold text-gray-900 mb-3">📄 Original Quote Content</h3>
+                                <div className="bg-gray-50 rounded-xl p-6 max-h-96 overflow-auto border border-gray-200">
+                                    <pre className="text-gray-700 text-sm whitespace-pre-wrap font-mono leading-relaxed">
+                                        {viewingQuote.original_content}
+                                    </pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             )}
         </div>
