@@ -9,6 +9,7 @@ AI-powered hotel event quote parser. Extract financial data from hotel quotes in
 ## ✨ Features
 
 - **AI-Powered Parsing** - Upload PDFs, images, or paste text to extract hotel quote data using OpenAI GPT-4o
+- **Large File Support** - Direct-to-Storage uploads handle huge files (50MB+) bypassing server limits
 - **Multi-Format Support** - Accepts PDF, images (PNG, JPG), Word docs, and raw text
 - **Smart Extraction** - Automatically identifies hotel name, total cost, guestrooms, meeting spaces, and F&B costs
 - **Quote History** - Stores parsed quotes in Supabase with full history tracking
@@ -19,9 +20,9 @@ AI-powered hotel event quote parser. Extract financial data from hotel quotes in
 - **Framework**: Next.js 16.1 (App Router)
 - **Language**: TypeScript
 - **AI/ML**: OpenAI GPT-4o with vision capabilities
-- **Database**: Supabase (PostgreSQL)
+- **Database**: Supabase (PostgreSQL + Storage)
 - **Styling**: Tailwind CSS with custom design system
-- **File Handling**: Multipart form uploads with AI vision
+- **File Handling**: Direct client-to-Supabase Storage upload (bypassing Vercel 4.5MB limit)
 - **Deployment**: Vercel: https://hotel-quote-parser-brown.vercel.app
 
 ## 🎨 Design System
@@ -64,8 +65,28 @@ CREATE TABLE quotes (
   food_beverage NUMERIC,
   rooms INTEGER,
   notes TEXT,
-  created_at TIMESTAMP DEFAULT NOW()
+  created_at TIMESTAMP DEFAULT NOW(),
+  -- Additional fields for file tracking
+  file_name TEXT,
+  file_size INTEGER,
+  content_type TEXT,
+  parsing_status TEXT
 );
+```
+
+### Storage Setup
+
+1. Create a public bucket in Supabase Storage named `quotes`.
+2. Add the following Row Level Security (RLS) policy to the `storage.objects` table:
+
+```sql
+-- Allow public uploads
+INSERT INTO storage.objects (bucket_id, name, owner, created_at, updated_at, last_accessed_at, metadata, path_tokens, version)
+SELECT 'quotes', name, owner, created_at, updated_at, last_accessed_at, metadata, path_tokens, version
+WHERE bucket_id = 'quotes';
+
+-- Allow public reads
+SELECT * FROM storage.objects WHERE bucket_id = 'quotes';
 ```
 
 ## 🎯 Usage
