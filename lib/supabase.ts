@@ -7,22 +7,12 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 // Server-side client has been moved to lib/supabase-admin.ts to prevent client-side errors
 
-// Database types
 export interface Quote {
     id: string;
     created_at: string;
     original_content: string;
     content_type: 'html' | 'text' | 'pdf' | 'image' | 'file';
-    total_quote: number | null;
-    guestroom_total: number | null;
-    meeting_room_total: number | null;
-    food_beverage_total: number | null;
-    hotel_name: string | null;
-    check_in_date: string | null;
-    check_out_date: string | null;
-    number_of_rooms: number | null;
-    number_of_guests: number | null;
-    extracted_data: any;
+    extracted_data: any; // All parsed data stored here
     parsing_status: 'pending' | 'processing' | 'success' | 'failed';
     error_message: string | null;
     file_name: string | null;

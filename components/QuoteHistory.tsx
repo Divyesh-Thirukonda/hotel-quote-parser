@@ -63,9 +63,9 @@ export default function QuoteHistory() {
     const filteredQuotes = quotes.filter((quote) => {
         const searchLower = searchTerm.toLowerCase();
         return (
-            quote.hotel_name?.toLowerCase().includes(searchLower) ||
+            quote.extracted_data?.hotel_name?.toLowerCase().includes(searchLower) ||
             quote.id.toLowerCase().includes(searchLower) ||
-            formatCurrency(quote.total_quote).includes(searchLower)
+            formatCurrency(quote.extracted_data?.total_quote).includes(searchLower)
         );
     });
 
@@ -121,7 +121,7 @@ export default function QuoteHistory() {
                             <div className="flex-1">
                                 <div className="flex items-center gap-3 mb-2">
                                     <h4 className="text-xl font-bold text-gray-900">
-                                        {quote.hotel_name || 'Unnamed Hotel'}
+                                        {quote.extracted_data?.hotel_name || 'Unnamed Hotel'}
                                     </h4>
                                     <span
                                         className={`px-3 py-1 rounded-full text-xs font-semibold ${quote.parsing_status === 'success'
@@ -147,29 +147,29 @@ export default function QuoteHistory() {
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                     <div>
                                         <p className="text-gray-500 text-xs font-medium">Total</p>
-                                        <p className="text-gray-900 font-bold">{formatCurrency(quote.total_quote)}</p>
+                                        <p className="text-gray-900 font-bold">{formatCurrency(quote.extracted_data?.total_quote)}</p>
                                     </div>
-                                    {(quote.guestroom_total || 0) > 0 && (
+                                    {(quote.extracted_data?.guestroom_total || 0) > 0 && (
                                         <div>
                                             <p className="text-gray-500 text-xs font-medium">Guestrooms</p>
                                             <p className="text-gray-900 font-bold">
-                                                {formatCurrency(quote.guestroom_total)}
+                                                {formatCurrency(quote.extracted_data?.guestroom_total)}
                                             </p>
                                         </div>
                                     )}
-                                    {(quote.meeting_room_total || 0) > 0 && (
+                                    {(quote.extracted_data?.meeting_room_total || 0) > 0 && (
                                         <div>
                                             <p className="text-gray-500 text-xs font-medium">Meeting Rooms</p>
                                             <p className="text-gray-900 font-bold">
-                                                {formatCurrency(quote.meeting_room_total)}
+                                                {formatCurrency(quote.extracted_data?.meeting_room_total)}
                                             </p>
                                         </div>
                                     )}
-                                    {(quote.food_beverage_total || 0) > 0 && (
+                                    {(quote.extracted_data?.food_beverage_total || 0) > 0 && (
                                         <div>
                                             <p className="text-gray-500 text-xs font-medium">F&B</p>
                                             <p className="text-gray-900 font-bold">
-                                                {formatCurrency(quote.food_beverage_total)}
+                                                {formatCurrency(quote.extracted_data?.food_beverage_total)}
                                             </p>
                                         </div>
                                     )}

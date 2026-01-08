@@ -10,27 +10,14 @@ CREATE TABLE IF NOT EXISTS quotes (
     original_content TEXT NOT NULL,
     content_type VARCHAR(50) NOT NULL CHECK (content_type IN ('html', 'text', 'pdf', 'image', 'file')),
     
-    -- Core extracted data points
-    total_quote DECIMAL(12, 2),
-    guestroom_total DECIMAL(12, 2),
-    meeting_room_total DECIMAL(12, 2),
-    food_beverage_total DECIMAL(12, 2),
-    
-    -- Additional extracted information
-    hotel_name VARCHAR(255),
-    check_in_date DATE,
-    check_out_date DATE,
-    number_of_rooms INTEGER,
-    number_of_guests INTEGER,
-    
-    -- Full parsed data (stores complete AI extraction)
+    -- All parsed data stored in JSONB (single source of truth)
     extracted_data JSONB,
     
     -- Parsing status
     parsing_status VARCHAR(50) DEFAULT 'pending' CHECK (parsing_status IN ('pending', 'processing', 'success', 'failed')),
     error_message TEXT,
     
-    -- Metadata
+    -- File metadata
     file_name VARCHAR(255),
     file_size INTEGER
 );
@@ -38,7 +25,8 @@ CREATE TABLE IF NOT EXISTS quotes (
 -- Create indexes for better query performance
 CREATE INDEX IF NOT EXISTS idx_quotes_created_at ON quotes(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_quotes_parsing_status ON quotes(parsing_status);
-CREATE INDEX IF NOT EXISTS idx_quotes_hotel_name ON quotes(hotel_name);
+-- GIN index on extracted_data for JSONB queries (optional but recommended)
+CREATE INDEX IF NOT EXISTS idx_quotes_extracted_data ON quotes USING GIN (extracted_data);
 
 -- Enable Row Level Security (RLS)
 ALTER TABLE quotes ENABLE ROW LEVEL SECURITY;
