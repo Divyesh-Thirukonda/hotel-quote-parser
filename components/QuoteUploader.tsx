@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
+import { supabase } from '@/lib/supabase';
 
 interface QuoteUploaderProps {
     onParseComplete: (result: any) => void;
@@ -21,13 +22,51 @@ export default function QuoteUploader({ onParseComplete }: QuoteUploaderProps) {
             setError(null);
 
             try {
-                const formData = new FormData();
-                formData.append('file', file);
+                console.log('Uploader: Starting file upload process', { fileName: file.name, fileSize: file.size });
 
+                // 1. Upload to Supabase Storage
+                const timestamp = Date.now();
+                // Sanitize filename to avoid issues
+                const cleanFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+                const filePath = `${timestamp}_${cleanFileName}`;
+
+                console.log('Uploader: Uploading to Supabase Storage...', filePath);
+
+                const { data: uploadData, error: uploadError } = await supabase.storage
+                    .from('quotes')
+                    .upload(filePath, file);
+
+                if (uploadError) {
+                    console.error('Uploader: Storage upload failed', uploadError);
+                    throw new Error(`Upload failed: ${uploadError.message}`);
+                }
+
+                console.log('Uploader: Storage upload successful, sending to API...');
+
+                // 2. Send file path to API for processing
                 const response = await fetch('/api/parse', {
                     method: 'POST',
-                    body: formData,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        filePath,
+                        fileType: file.type,
+                        fileName: file.name
+                    }),
                 });
+
+                console.log('Uploader: API Response status', response.status);
+
+                if (!response.ok) {
+                    const text = await response.text();
+                    try {
+                        const jsonError = JSON.parse(text);
+                        throw new Error(jsonError.error || `Server error: ${response.status}`);
+                    } catch (e) {
+                        throw new Error(`Processing failed: ${response.status} ${response.statusText}`);
+                    }
+                }
 
                 const result = await response.json();
 
@@ -37,6 +76,7 @@ export default function QuoteUploader({ onParseComplete }: QuoteUploaderProps) {
 
                 onParseComplete(result);
             } catch (err: any) {
+                console.error('Uploader: Error during process', err);
                 setError(err.message);
             } finally {
                 setIsLoading(false);

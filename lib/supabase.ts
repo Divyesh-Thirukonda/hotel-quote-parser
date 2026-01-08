@@ -5,11 +5,7 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-// Server-side client with service role key (use with caution)
-export const supabaseAdmin = createClient(
-    supabaseUrl,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+// Server-side client has been moved to lib/supabase-admin.ts to prevent client-side errors
 
 // Database types
 export interface Quote {

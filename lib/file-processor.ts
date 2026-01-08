@@ -1,4 +1,5 @@
-import * as pdfParse from 'pdf-parse';
+// @ts-ignore
+const pdfParse = require('pdf-parse/lib/pdf-parse.js');
 import mammoth from 'mammoth';
 
 /**
@@ -6,7 +7,7 @@ import mammoth from 'mammoth';
  */
 export async function extractTextFromPDF(buffer: Buffer): Promise<string> {
     try {
-        const data = await (pdfParse as any)(buffer);
+        const data = await pdfParse(buffer);
         return data.text;
     } catch (error) {
         console.error('Error extracting text from PDF:', error);
