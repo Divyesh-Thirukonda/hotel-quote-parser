@@ -49,7 +49,11 @@ export const exportAsCSV = (quote: Quote) => {
         ['Number of Guests', data.number_of_guests || 'N/A'],
     ];
 
-    const csvContent = csvRows.map((row) => row.join(',')).join('\n');
+    // Wrap each value in quotes to handle commas in formatted currency
+    const csvContent = csvRows
+        .map((row) => row.map(val => `"${val}"`).join(','))
+        .join('\n');
+
     const dataUri = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvContent);
     const exportFileDefaultName = `hotel-quote-${quote.id.substring(0, 8)}.csv`;
 
