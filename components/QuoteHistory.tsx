@@ -85,13 +85,13 @@ export default function QuoteHistory() {
     return (
         <div className="space-y-6">
             {/* Search bar */}
-            <div className="glass-card p-4">
+            <div className="bg-white/90 backdrop-blur-md rounded-2xl p-4 border border-gray-200/50">
                 <input
                     type="text"
                     placeholder="🔍 Search by hotel name or total..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="input-field"
+                    className="w-full px-4 py-3 bg-transparent border-none outline-none text-gray-900 placeholder-gray-400 text-base"
                 />
             </div>
 
@@ -168,10 +168,10 @@ export default function QuoteHistory() {
 
                         {/* Expanded details */}
                         {selectedQuote?.id === quote.id && (
-                            <div className="mt-6 pt-6 border-t border-white/10">
-                                <h5 className="text-sm font-semibold text-white/60 mb-3">Original Content</h5>
-                                <div className="bg-white/5 rounded-lg p-4 max-h-64 overflow-auto">
-                                    <pre className="text-white/80 text-xs whitespace-pre-wrap font-mono">
+                            <div className="mt-6 pt-6 border-t border-gray-200">
+                                <h5 className="text-sm font-semibold text-gray-700 mb-3">📄 Original Quote Content</h5>
+                                <div className="bg-gray-50 rounded-lg p-4 max-h-64 overflow-auto border border-gray-200">
+                                    <pre className="text-gray-700 text-xs whitespace-pre-wrap font-mono leading-relaxed">
                                         {quote.original_content.substring(0, 1000)}
                                         {quote.original_content.length > 1000 && '...'}
                                     </pre>

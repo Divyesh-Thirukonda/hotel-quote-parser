@@ -3,8 +3,16 @@
 
 @import "tailwindcss";
 
-/* Smooth transitions everywhere */
-* {
+/* Smooth transitions - scoped to avoid hydration issues */
+button,
+a,
+input,
+textarea,
+select,
+.glass-card,
+.btn-primary,
+.btn-secondary,
+[class*='category-'] {
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
