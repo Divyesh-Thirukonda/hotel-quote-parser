@@ -26,7 +26,7 @@ export async function parseQuoteWithAI(content: string): Promise<ParsedQuote> {
     // @ts-ignore - responses API is experimental in this version
     const response: any = await openai.responses.create({
         model: "gpt-5",
-        reasoning: { effort: "medium" },
+        reasoning: { effort: "high" },
         instructions: `You are an expert at parsing hotel quotes and extracting financial information. 
         
 Your task is to extract the following key data points from hotel quote emails:
@@ -44,6 +44,7 @@ CRITICAL RULES:
 - All monetary amounts should be numbers (e.g., 1234.56, not "$1,234.56")
 - If a value cannot be found, return null
 - Extract dates in ISO format (YYYY-MM-DD)
+- Default *_total fields to pre-tax / pre-service unless the proposal explicitly says taxes/service are included. Then put the computed “all-in estimate” in additional_notes.
 
 Return your response as a JSON object with these exact keys: reasoning, total_quote, guestroom_total, meeting_room_total, food_beverage_total, hotel_name, check_in_date, check_out_date, number_of_rooms, number_of_guests, additional_notes`,
         input: `Please parse the following hotel quote and extract all relevant financial information:\n\n${content}`,
@@ -110,7 +111,7 @@ export async function parseQuoteFromImage(imageUrl: string): Promise<ParsedQuote
     // @ts-ignore - responses API is experimental in this version
     const response: any = await openai.responses.create({
         model: "gpt-5",
-        reasoning: { effort: "medium" },
+        reasoning: { effort: "high" },
         instructions: `You are an expert at parsing hotel quotes and extracting financial information from images.
         
 Extract the following key data points:
