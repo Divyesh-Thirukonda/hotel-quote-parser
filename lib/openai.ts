@@ -26,7 +26,7 @@ export async function parseQuoteWithAI(content: string): Promise<ParsedQuote> {
     // @ts-ignore - responses API is experimental in this version
     const response: any = await openai.responses.create({
         model: "gpt-5",
-        reasoning: { effort: "high" },
+        reasoning: { effort: "medium" },
         instructions: `You are an expert at parsing hotel quotes and extracting financial information. 
         
 Your task is to extract the following key data points from hotel quote emails:
@@ -52,13 +52,27 @@ Return your response as a JSON object with these exact keys: reasoning, total_qu
     // Defensive response handling for experimental API
     let responseContent: string | null = null;
 
-    if (response.output_parsed) {
+    console.log(response);
+
+    if (response.output_text) {
+        responseContent = response.output_text;
+    } else if (response.output_parsed) {
         responseContent = JSON.stringify(response.output_parsed);
     } else if (Array.isArray(response.output)) {
         // Try to find text output
         const textItem = response.output.find((item: any) => item.type === 'message' || item.content);
         if (textItem && textItem.content) {
-            responseContent = typeof textItem.content === 'string' ? textItem.content : JSON.stringify(textItem.content);
+            if (typeof textItem.content === 'string') {
+                responseContent = textItem.content;
+            } else if (Array.isArray(textItem.content)) {
+                // Handle array of content parts
+                responseContent = textItem.content
+                    .filter((part: any) => part.type === 'text')
+                    .map((part: any) => part.text)
+                    .join('');
+            } else {
+                responseContent = JSON.stringify(textItem.content);
+            }
         }
     }
 
@@ -70,7 +84,22 @@ Return your response as a JSON object with these exact keys: reasoning, total_qu
     // Clean markdown code blocks if present (common in reasoning models)
     responseContent = responseContent.replace(/```json\n?|\n?```/g, '');
 
-    const parsed = JSON.parse(responseContent);
+    let parsed: any;
+    try {
+        parsed = JSON.parse(responseContent);
+        // Handle array response (common in strict JSON mode or reasoning models returning a list)
+        if (Array.isArray(parsed) && parsed.length > 0) {
+            parsed = parsed[0];
+        }
+    } catch (e) {
+        // If it's already an object (from the array access earlier), use it directly
+        if (typeof responseContent === 'object') {
+            parsed = responseContent;
+        } else {
+            console.error('Failed to parse response content:', responseContent);
+            throw new Error('Failed to parse AI response as JSON');
+        }
+    }
 
     // Validate and return
     return QuoteSchema.parse(parsed);
@@ -78,13 +107,11 @@ Return your response as a JSON object with these exact keys: reasoning, total_qu
 
 // For image-based quotes (OCR)
 export async function parseQuoteFromImage(imageUrl: string): Promise<ParsedQuote> {
-    const completion = await openai.chat.completions.create({
-        model: 'gpt-4o-2024-08-06',
-        temperature: 0,
-        messages: [
-            {
-                role: 'system',
-                content: `You are an expert at parsing hotel quotes and extracting financial information from images.
+    // @ts-ignore - responses API is experimental in this version
+    const response: any = await openai.responses.create({
+        model: "gpt-5",
+        reasoning: { effort: "medium" },
+        instructions: `You are an expert at parsing hotel quotes and extracting financial information from images.
         
 Extract the following key data points:
 1. Total Quote - The overall total cost for the entire booking
@@ -103,29 +130,65 @@ CRITICAL RULES:
 - Be thorough in reading all text in the image
 
 Return your response as a JSON object with these exact keys: reasoning, total_quote, guestroom_total, meeting_room_total, food_beverage_total, hotel_name, check_in_date, check_out_date, number_of_rooms, number_of_guests, additional_notes`,
+        input: [
+            {
+                type: 'text',
+                text: 'Please parse this hotel quote image and extract all relevant financial information:',
             },
             {
-                role: 'user',
-                content: [
-                    {
-                        type: 'text',
-                        text: 'Please parse this hotel quote image and extract all relevant financial information:',
-                    },
-                    {
-                        type: 'image_url',
-                        image_url: { url: imageUrl },
-                    },
-                ],
+                type: 'image_url',
+                image_url: { url: imageUrl },
             },
         ],
-        response_format: { type: 'json_object' },
     });
 
-    const responseContent = completion.choices[0].message.content;
-    if (!responseContent) {
-        throw new Error('Failed to parse quote from image - no response content');
+    // Defensive response handling for experimental API
+    let responseContent: string | null = null;
+
+    if (response.output_text) {
+        responseContent = response.output_text;
+    } else if (response.output_parsed) {
+        responseContent = JSON.stringify(response.output_parsed);
+    } else if (Array.isArray(response.output)) {
+        // Try to find text output
+        const textItem = response.output.find((item: any) => item.type === 'message' || item.content);
+        if (textItem && textItem.content) {
+            if (typeof textItem.content === 'string') {
+                responseContent = textItem.content;
+            } else if (Array.isArray(textItem.content)) {
+                // Handle array of content parts
+                responseContent = textItem.content
+                    .filter((part: any) => part.type === 'text')
+                    .map((part: any) => part.text)
+                    .join('');
+            } else {
+                responseContent = JSON.stringify(textItem.content);
+            }
+        }
     }
 
-    const parsed = JSON.parse(responseContent);
+    if (!responseContent) {
+        console.error('Experimental API Response (Image):', JSON.stringify(response, null, 2));
+        throw new Error('Failed to parse quote from image - no response content found');
+    }
+
+    // Clean markdown code blocks
+    responseContent = responseContent.replace(/```json\n?|\n?```/g, '');
+
+    let parsed: any;
+    try {
+        parsed = JSON.parse(responseContent);
+        // Handle array response (common in strict JSON mode or reasoning models returning a list)
+        if (Array.isArray(parsed) && parsed.length > 0) {
+            parsed = parsed[0];
+        }
+    } catch (e) {
+        if (typeof responseContent === 'object') {
+            parsed = responseContent;
+        } else {
+            throw new Error('Failed to parse Image AI response as JSON');
+        }
+    }
+
     return QuoteSchema.parse(parsed);
 }

@@ -10,9 +10,21 @@ export default function QuoteHistory() {
     const [viewingQuote, setViewingQuote] = useState<Quote | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
 
+    const [copiedId, setCopiedId] = useState<string | null>(null);
+
     useEffect(() => {
         fetchQuotes();
     }, []);
+
+    const handleCopy = async (text: string, id: string) => {
+        try {
+            await navigator.clipboard.writeText(text);
+            setCopiedId(id);
+            setTimeout(() => setCopiedId(null), 2000);
+        } catch (err) {
+            console.error('Failed to copy text:', err);
+        }
+    };
 
     const fetchQuotes = async () => {
         try {
@@ -185,7 +197,26 @@ export default function QuoteHistory() {
                         {/* Expanded details */}
                         {selectedQuote?.id === quote.id && (
                             <div className="mt-6 pt-6 border-t border-gray-200">
-                                <h5 className="text-sm font-semibold text-gray-700 mb-3">📄 Original Quote Content</h5>
+                                <div className="flex items-center justify-between mb-3">
+                                    <h5 className="text-sm font-semibold text-gray-700">📄 Original Quote Content</h5>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleCopy(quote.original_content, quote.id);
+                                        }}
+                                        className="text-xs font-medium text-purple-600 hover:text-purple-700 flex items-center gap-1 transition-colors px-2 py-1 rounded-md hover:bg-purple-50"
+                                    >
+                                        {copiedId === quote.id ? (
+                                            <>
+                                                <span>✓</span> Copied!
+                                            </>
+                                        ) : (
+                                            <>
+                                                <span>📋</span> Copy Text
+                                            </>
+                                        )}
+                                    </button>
+                                </div>
                                 <div className="bg-gray-50 rounded-lg p-4 max-h-64 overflow-auto border border-gray-200">
                                     <pre className="text-gray-700 text-xs whitespace-pre-wrap font-mono leading-relaxed">
                                         {quote.original_content.substring(0, 1000)}
@@ -288,7 +319,23 @@ export default function QuoteHistory() {
 
                             {/* Original Content */}
                             <div>
-                                <h3 className="text-lg font-bold text-gray-900 mb-3">📄 Original Quote Content</h3>
+                                <div className="flex items-center justify-between mb-3">
+                                    <h3 className="text-lg font-bold text-gray-900">📄 Original Quote Content</h3>
+                                    <button
+                                        onClick={() => handleCopy(viewingQuote.original_content, 'modal-' + viewingQuote.id)}
+                                        className="text-sm font-medium text-purple-600 hover:text-purple-700 flex items-center gap-1 transition-colors px-3 py-1.5 rounded-lg hover:bg-purple-50"
+                                    >
+                                        {copiedId === 'modal-' + viewingQuote.id ? (
+                                            <>
+                                                <span>✓</span> Copied!
+                                            </>
+                                        ) : (
+                                            <>
+                                                <span>📋</span> Copy Full Text
+                                            </>
+                                        )}
+                                    </button>
+                                </div>
                                 <div className="bg-gray-50 rounded-xl p-6 max-h-96 overflow-auto border border-gray-200">
                                     <pre className="text-gray-700 text-sm whitespace-pre-wrap font-mono leading-relaxed">
                                         {viewingQuote.original_content}
