@@ -3,6 +3,7 @@
 import { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { supabase } from '@/lib/supabase';
+import SnakeGame from './SnakeGame';
 
 interface QuoteUploaderProps {
     onParseComplete: (result: any) => void;
@@ -12,51 +13,56 @@ export default function QuoteUploader({ onParseComplete }: QuoteUploaderProps) {
     const [pastedContent, setPastedContent] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [uploadProgress, setUploadProgress] = useState<{ fileName: string; status: 'uploading' | 'processing' | 'done' | 'error' }[]>([]);
 
     const onDrop = useCallback(
         async (acceptedFiles: File[]) => {
             if (acceptedFiles.length === 0) return;
 
-            const file = acceptedFiles[0];
             setIsLoading(true);
             setError(null);
+            setUploadProgress(acceptedFiles.map(f => ({ fileName: f.name, status: 'uploading' })));
 
             try {
-                console.log('Uploader: Starting file upload process', { fileName: file.name, fileSize: file.size });
+                console.log(`Uploader: Starting batch upload for ${acceptedFiles.length} file(s)`);
 
-                // 1. Upload to Supabase Storage
-                const timestamp = Date.now();
-                // Sanitize filename to avoid issues
-                const cleanFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-                const filePath = `${timestamp}_${cleanFileName}`;
+                // 1. Upload all files to Supabase Storage in parallel
+                const uploadPromises = acceptedFiles.map(async (file) => {
+                    const timestamp = Date.now();
+                    const cleanFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+                    const filePath = `${timestamp}_${cleanFileName}`;
 
-                console.log('Uploader: Uploading to Supabase Storage...', filePath);
+                    const { error: uploadError } = await supabase.storage
+                        .from('quotes')
+                        .upload(filePath, file);
 
-                const { data: uploadData, error: uploadError } = await supabase.storage
-                    .from('quotes')
-                    .upload(filePath, file);
+                    if (uploadError) {
+                        throw new Error(`Upload failed for ${file.name}: ${uploadError.message}`);
+                    }
 
-                if (uploadError) {
-                    console.error('Uploader: Storage upload failed', uploadError);
-                    throw new Error(`Upload failed: ${uploadError.message}`);
-                }
+                    return {
+                        filePath,
+                        fileType: file.type,
+                        fileName: file.name,
+                    };
+                });
 
-                console.log('Uploader: Storage upload successful, sending to API...');
+                const uploadResults = await Promise.all(uploadPromises);
+                console.log('Uploader: All files uploaded, sending batch to API...');
 
-                // 2. Send file path to API for processing
+                // Update progress to processing
+                setUploadProgress(prev => prev.map(p => ({ ...p, status: 'processing' })));
+
+                // 2. Send batch request to API
                 const response = await fetch('/api/parse', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        filePath,
-                        fileType: file.type,
-                        fileName: file.name
+                        batch: uploadResults,
                     }),
                 });
-
-                console.log('Uploader: API Response status', response.status);
 
                 if (!response.ok) {
                     const text = await response.text();
@@ -64,22 +70,27 @@ export default function QuoteUploader({ onParseComplete }: QuoteUploaderProps) {
                         const jsonError = JSON.parse(text);
                         throw new Error(jsonError.error || `Server error: ${response.status}`);
                     } catch (e) {
-                        throw new Error(`Processing failed: ${response.status} ${response.statusText}`);
+                        throw new Error(`Processing failed: ${response.status}`);
                     }
                 }
 
                 const result = await response.json();
 
                 if (!result.success) {
-                    throw new Error(result.error || 'Failed to parse quote');
+                    throw new Error(result.error || 'Failed to parse quotes');
                 }
+
+                // Update progress to done
+                setUploadProgress(prev => prev.map(p => ({ ...p, status: 'done' })));
 
                 onParseComplete(result);
             } catch (err: any) {
-                console.error('Uploader: Error during process', err);
+                console.error('Uploader: Batch processing error', err);
                 setError(err.message);
+                setUploadProgress(prev => prev.map(p => ({ ...p, status: 'error' })));
             } finally {
                 setIsLoading(false);
+                setTimeout(() => setUploadProgress([]), 3000);
             }
         },
         [onParseComplete]
@@ -95,7 +106,7 @@ export default function QuoteUploader({ onParseComplete }: QuoteUploaderProps) {
             'application/msword': ['.doc'],
             'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
         },
-        maxFiles: 1,
+        multiple: true, // Enable multiple files
         disabled: isLoading,
     });
 
@@ -154,17 +165,23 @@ export default function QuoteUploader({ onParseComplete }: QuoteUploaderProps) {
                     <div>
                         <h3 className="text-2xl font-semibold text-slate-900 mb-2">
                             {isLoading ? (
-                                <span className="loading-dots">Analyzing your quote</span>
+                                <span className="loading-dots">Processing your files</span>
                             ) : isDragActive ? (
                                 'Drop to upload'
                             ) : (
-                                'Drop your hotel quote here'
+                                'Drop files here or click to browse'
                             )}
                         </h3>
                         <p className="text-slate-500">
-                            {isLoading
-                                ? 'This may take a moment'
-                                : 'PDF, Images, Word docs - we handle it all'}
+                            {isLoading ? (
+                                uploadProgress.length > 0 && (
+                                    <span className="text-sm">
+                                        {uploadProgress.filter(p => p.status === 'done').length} of {uploadProgress.length} files processed
+                                    </span>
+                                )
+                            ) : (
+                                <>Supports PDF, HTML, images, and text files • Multiple files accepted</>
+                            )}
                         </p>
                     </div>
                     {!isLoading && (
@@ -234,23 +251,44 @@ Grand Ballroom = $2,500.00
                             Parsing...
                         </span>
                     ) : (
-                        '✓ Parse Quote'
+                        '✅ Parse Quote'
                     )}
                 </button>
             </div>
 
-            {/* Error message */}
-            {error && (
-                <div className="glass-card p-4 bg-red-50 border-2 border-red-200 animate-fade-in">
-                    <div className="flex items-start gap-3">
-                        <span className="text-2xl">❌</span>
-                        <div>
-                            <p className="font-bold text-red-800">Oops! Something went wrong</p>
-                            <p className="text-sm text-red-600 mt-1">{error}</p>
+
+            {/* Snake Game Modal - Show while loading */}
+            {isLoading && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm animate-fade-in">
+                    <div className="relative">
+                        <div className="text-center mb-6">
+                            <h3 className="text-3xl font-bold text-white mb-2">
+                                While You Wait... 🐍
+                            </h3>
+                            <p className="text-gray-300">
+                                Your files are being parsed
+                            </p>
                         </div>
+                        <SnakeGame />
                     </div>
                 </div>
             )}
-        </div>
+
+
+            {/* Error message */}
+            {
+                error && (
+                    <div className="glass-card p-4 bg-red-50 border-2 border-red-200 animate-fade-in">
+                        <div className="flex items-start gap-3">
+                            <span className="text-2xl">❌</span>
+                            <div>
+                                <p className="font-bold text-red-800">Oops! Something went wrong</p>
+                                <p className="text-sm text-red-600 mt-1">{error}</p>
+                            </div>
+                        </div>
+                    </div>
+                )
+            }
+        </div >
     );
 }

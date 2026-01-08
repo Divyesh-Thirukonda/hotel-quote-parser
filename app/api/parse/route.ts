@@ -9,187 +9,111 @@ import {
     getContentTypeFromFilename,
 } from '@/lib/file-processor';
 
-const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB (Server limit)
+const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
 
-export async function POST(request: NextRequest) {
-    console.log('API: Parse request received');
-    try {
-        const contentType = request.headers.get('content-type') || '';
+// Helper function to process a single file from storage
+async function processFile(fileInfo: { filePath: string; fileName: string; fileType?: string }) {
+    const { filePath, fileName, fileType = 'application/octet-stream' } = fileInfo;
 
-        let textContent = '';
-        let originalContent = '';
-        let fileContentType = 'text';
-        let fileName: string | null = null;
-        let fileSize: number | null = null;
+    console.log(`API: Processing file ${fileName} from storage`);
 
-        // Handle multipart/form-data (direct file upload - legacy/fallback)
-        if (contentType.includes('multipart/form-data')) {
-            const formData = await request.formData();
-            const file = formData.get('file') as File | null;
+    // Download from Supabase Storage
+    const { data: fileData, error: downloadError } = await supabaseAdmin
+        .storage
+        .from('quotes')
+        .download(filePath);
 
-            if (!file) {
-                return NextResponse.json(
-                    { error: 'No file provided' },
-                    { status: 400 }
-                );
-            }
+    if (downloadError || !fileData) {
+        throw new Error(`Failed to download file: ${downloadError?.message || 'File not found'}`);
+    }
 
-            fileName = file.name;
-            fileSize = file.size;
+    const fileSize = fileData.size;
+    const buffer = Buffer.from(await fileData.arrayBuffer());
+    const fileContentType = getContentTypeFromFilename(fileName);
 
-            if (fileSize > MAX_FILE_SIZE) {
-                return NextResponse.json(
-                    { error: 'File size exceeds 10MB limit' },
-                    { status: 400 }
-                );
-            }
+    let textContent = '';
+    let originalContent = '';
+    let parsed: any;
 
-            const buffer = Buffer.from(await file.arrayBuffer());
-            fileContentType = getContentTypeFromFilename(fileName || 'file');
+    // Process based on file type
+    if (fileContentType === 'pdf') {
+        textContent = await extractTextFromPDF(buffer);
+        originalContent = textContent;
+    } else if (fileContentType === 'image') {
+        const dataUrl = bufferToDataURL(buffer, fileType);
+        originalContent = `[Image file: ${fileName}]`;
+        parsed = await parseQuoteFromImage(dataUrl);
+    } else if (fileContentType === 'docx') {
+        textContent = await extractTextFromDOCX(buffer);
+        originalContent = textContent;
+    } else {
+        textContent = buffer.toString('utf-8');
+        originalContent = textContent;
+    }
 
-            // Process based on file type
-            if (fileContentType === 'pdf') {
-                textContent = await extractTextFromPDF(buffer);
-                originalContent = textContent;
-            } else if (fileContentType === 'image') {
-                const dataUrl = bufferToDataURL(buffer, file.type);
-                originalContent = `[Image file: ${fileName}]`;
-                const parsed = await parseQuoteFromImage(dataUrl);
+    // Parse with AI if we haven't already (images are parsed above)
+    if (!parsed) {
+        parsed = await parseQuoteWithAI(textContent);
+    }
 
-                // Store in database
-                const { data, error } = await supabaseAdmin
-                    .from('quotes')
-                    .insert({
-                        original_content: originalContent,
-                        content_type: fileContentType,
-                        total_quote: parsed.total_quote,
-                        guestroom_total: parsed.guestroom_total,
-                        meeting_room_total: parsed.meeting_room_total,
-                        food_beverage_total: parsed.food_beverage_total,
-                        hotel_name: parsed.hotel_name,
-                        check_in_date: parsed.check_in_date,
-                        check_out_date: parsed.check_out_date,
-                        number_of_rooms: parsed.number_of_rooms,
-                        number_of_guests: parsed.number_of_guests,
-                        extracted_data: parsed,
-                        parsing_status: 'success',
-                        file_name: fileName || 'file',
-                        file_size: fileSize,
-                    })
-                    .select()
-                    .single();
+    // Store in database
+    const { data, error } = await supabaseAdmin
+        .from('quotes')
+        .insert({
+            original_content: originalContent,
+            content_type: fileContentType,
+            total_quote: parsed.total_quote,
+            guestroom_total: parsed.guestroom_total,
+            meeting_room_total: parsed.meeting_room_total,
+            food_beverage_total: parsed.food_beverage_total,
+            hotel_name: parsed.hotel_name,
+            check_in_date: parsed.check_in_date,
+            check_out_date: parsed.check_out_date,
+            number_of_rooms: parsed.number_of_rooms,
+            number_of_guests: parsed.number_of_guests,
+            extracted_data: parsed,
+            parsing_status: 'success',
+            file_name: fileName,
+            file_size: fileSize,
+        })
+        .select()
+        .single();
 
-                if (error) {
-                    console.error('Database error:', error);
-                    throw new Error('Failed to store parsed quote in database');
-                }
+    if (error) {
+        throw new Error(`Database error: ${error.message}`);
+    }
 
-                return NextResponse.json({
-                    success: true,
-                    quote: data,
-                    parsed,
-                });
-            }
-        }
-        // Handle JSON body (pasted text OR file path from storage)
-        else {
-            const body = await request.json();
+    return { quote: data, parsed };
+}
 
-            // Case 1: File Path provided (New Large File Flow)
-            if (body.filePath) {
-                console.log('API: Processing file from storage path:', body.filePath);
+// Helper function to process single request (file or pasted content)
+async function processSingleRequest(body: any) {
+    let textContent = '';
+    let originalContent = '';
+    let fileContentType = 'text';
+    let fileName: string | null = null;
+    let fileSize: number | null = null;
 
-                fileName = body.fileName || 'uploaded-file';
-                const fileType = body.fileType || 'application/octet-stream';
+    // Case 1: File from storage
+    if (body.filePath) {
+        return await processFile({
+            filePath: body.filePath,
+            fileName: body.fileName || 'uploaded-file',
+            fileType: body.fileType,
+        });
+    }
+    // Case 2: Pasted content
+    else if (body.content) {
+        originalContent = body.content;
+        fileContentType = body.contentType || 'text';
 
-                // Download from Supabase Storage
-                const { data: fileData, error: downloadError } = await supabaseAdmin
-                    .storage
-                    .from('quotes')
-                    .download(body.filePath);
-
-                if (downloadError) {
-                    console.error('API: Storage download error', downloadError);
-                    throw new Error(`Failed to download file from storage: ${downloadError.message}`);
-                }
-
-                if (!fileData) {
-                    throw new Error('File not found in storage');
-                }
-
-                fileSize = fileData.size;
-                const buffer = Buffer.from(await fileData.arrayBuffer());
-                fileContentType = getContentTypeFromFilename(fileName || 'file');
-
-                console.log('API: File downloaded, size:', fileSize, 'type:', fileContentType);
-
-                // Process based on file type (Unified logic)
-                if (fileContentType === 'pdf') {
-                    textContent = await extractTextFromPDF(buffer);
-                    originalContent = textContent;
-                } else if (fileContentType === 'image') {
-                    const dataUrl = bufferToDataURL(buffer, fileType);
-                    originalContent = `[Image file: ${fileName}]`;
-
-                    // Parse image directly
-                    const parsed = await parseQuoteFromImage(dataUrl);
-
-                    // Helper to store and return response (to avoid duplication)
-                    // But since we are inside the 'else', we can just return here?
-                    // The existing code has specific return for image.
-
-                    // To keep it clean, let's just copy the store logic for image here or use a shared function later.
-                    // For now, inline.
-                    const { data, error } = await supabaseAdmin
-                        .from('quotes')
-                        .insert({
-                            original_content: originalContent,
-                            content_type: fileContentType,
-                            total_quote: parsed.total_quote,
-                            guestroom_total: parsed.guestroom_total,
-                            meeting_room_total: parsed.meeting_room_total,
-                            food_beverage_total: parsed.food_beverage_total,
-                            hotel_name: parsed.hotel_name,
-                            check_in_date: parsed.check_in_date,
-                            check_out_date: parsed.check_out_date,
-                            number_of_rooms: parsed.number_of_rooms,
-                            number_of_guests: parsed.number_of_guests,
-                            extracted_data: parsed,
-                            parsing_status: 'success',
-                            file_name: fileName || 'file',
-                            file_size: fileSize,
-                        })
-                        .select()
-                        .single();
-
-                    if (error) throw new Error('Failed to store parsed quote in database');
-                    return NextResponse.json({ success: true, quote: data, parsed });
-                } else if (fileName && fileName.endsWith('.docx')) {
-                    textContent = await extractTextFromDOCX(buffer);
-                    originalContent = textContent;
-                } else {
-                    textContent = buffer.toString('utf-8');
-                    originalContent = textContent;
-                }
-
-                // Allow flow to continue to 'parseQuoteWithAI' at the bottom
-            }
-            // Case 2: Pasted Content
-            else if (body.content) {
-                originalContent = body.content;
-                fileContentType = body.contentType || 'text';
-
-                if (fileContentType === 'html') {
-                    textContent = stripHTML(body.content);
-                } else {
-                    textContent = body.content;
-                }
-            } else {
-                return NextResponse.json({ error: 'No content provided' }, { status: 400 });
-            }
+        if (fileContentType === 'html') {
+            textContent = stripHTML(body.content);
+        } else {
+            textContent = body.content;
         }
 
-        // Parse the text content with AI
+        // Parse with AI
         const parsed = await parseQuoteWithAI(textContent);
 
         // Store in database
@@ -209,42 +133,86 @@ export async function POST(request: NextRequest) {
                 number_of_guests: parsed.number_of_guests,
                 extracted_data: parsed,
                 parsing_status: 'success',
-                file_name: fileName || 'pasted-content',
+                file_name: fileName,
                 file_size: fileSize,
             })
             .select()
             .single();
 
         if (error) {
-            console.error('Database error:', error);
-            throw new Error('Failed to store parsed quote in database');
+            throw new Error(`Database error: ${error.message}`);
         }
 
-        return NextResponse.json({
-            success: true,
-            quote: data,
-            parsed,
-        });
-    } catch (error: any) {
-        console.error('Parse error:', error);
+        return { success: true, quote: data, parsed };
+    } else {
+        throw new Error('No content or file path provided');
+    }
+}
 
-        // Store failed parse in database
-        try {
-            await supabaseAdmin.from('quotes').insert({
-                original_content: '',
-                content_type: 'text',
-                parsing_status: 'failed',
-                error_message: error.message,
-            });
-        } catch (dbError) {
-            console.error('Failed to store error in database:', dbError);
+export async function POST(request: NextRequest) {
+    console.log('API: Parse request received');
+    try {
+        const contentType = request.headers.get('content-type') || '';
+
+        // Handle JSON body (both single file and batch)
+        if (contentType.includes('application/json')) {
+            const body = await request.json();
+
+            // Check if this is a batch request
+            if (body.batch && Array.isArray(body.batch)) {
+                console.log(`API: Batch request detected with ${body.batch.length} files`);
+
+                const results = [];
+
+                // Process each file sequentially to avoid rate limits
+                for (const fileInfo of body.batch) {
+                    try {
+                        const result = await processFile(fileInfo);
+                        results.push({
+                            success: true,
+                            fileName: fileInfo.fileName,
+                            ...result,
+                        });
+                    } catch (error: any) {
+                        console.error(`API: Error processing ${fileInfo.fileName}:`, error.message);
+                        results.push({
+                            success: false,
+                            fileName: fileInfo.fileName,
+                            error: error.message,
+                        });
+                    }
+                }
+
+                // Check if any succeeded
+                const successCount = results.filter(r => r.success).length;
+
+                return NextResponse.json({
+                    success: successCount > 0,
+                    batch: true,
+                    results,
+                    summary: {
+                        total: results.length,
+                        succeeded: successCount,
+                        failed: results.length - successCount,
+                    },
+                });
+            }
+
+            // Single file from storage or pasted content
+            const result = await processSingleRequest(body);
+            return NextResponse.json(result);
         }
 
+        // Fallback: unsupported content type
         return NextResponse.json(
-            {
-                success: false,
-                error: error.message || 'Failed to parse quote'
-            },
+            { error: 'Unsupported content type. Use application/json.' },
+            { status: 400 }
+        );
+
+    } catch (error: any) {
+        console.error('API: Error in parse route:', error);
+        return NextResponse.json(
+            { success: false, error: error.message || 'Failed to process request' },
             { status: 500 }
         );
     }

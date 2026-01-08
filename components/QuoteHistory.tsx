@@ -149,24 +149,30 @@ export default function QuoteHistory() {
                                         <p className="text-gray-500 text-xs font-medium">Total</p>
                                         <p className="text-gray-900 font-bold">{formatCurrency(quote.total_quote)}</p>
                                     </div>
-                                    <div>
-                                        <p className="text-gray-500 text-xs font-medium">Guestrooms</p>
-                                        <p className="text-gray-900 font-bold">
-                                            {formatCurrency(quote.guestroom_total)}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <p className="text-gray-500 text-xs font-medium">Meeting Rooms</p>
-                                        <p className="text-gray-900 font-bold">
-                                            {formatCurrency(quote.meeting_room_total)}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <p className="text-gray-500 text-xs font-medium">F&B</p>
-                                        <p className="text-gray-900 font-bold">
-                                            {formatCurrency(quote.food_beverage_total)}
-                                        </p>
-                                    </div>
+                                    {(quote.guestroom_total || 0) > 0 && (
+                                        <div>
+                                            <p className="text-gray-500 text-xs font-medium">Guestrooms</p>
+                                            <p className="text-gray-900 font-bold">
+                                                {formatCurrency(quote.guestroom_total)}
+                                            </p>
+                                        </div>
+                                    )}
+                                    {(quote.meeting_room_total || 0) > 0 && (
+                                        <div>
+                                            <p className="text-gray-500 text-xs font-medium">Meeting Rooms</p>
+                                            <p className="text-gray-900 font-bold">
+                                                {formatCurrency(quote.meeting_room_total)}
+                                            </p>
+                                        </div>
+                                    )}
+                                    {(quote.food_beverage_total || 0) > 0 && (
+                                        <div>
+                                            <p className="text-gray-500 text-xs font-medium">F&B</p>
+                                            <p className="text-gray-900 font-bold">
+                                                {formatCurrency(quote.food_beverage_total)}
+                                            </p>
+                                        </div>
+                                    )}
                                     {/* Other Fees - Optional Display */}
                                     {(quote.extracted_data?.other_fees_total || 0) > 0 && (
                                         <div>
@@ -256,7 +262,7 @@ export default function QuoteHistory() {
                                         >
                                             {copiedId === quote.id ? (
                                                 <>
-                                                    <span>✓</span> Copied!
+                                                    <span>✅</span> Copied!
                                                 </>
                                             ) : (
                                                 <>
