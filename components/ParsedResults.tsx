@@ -1,5 +1,7 @@
 'use client';
 
+import { useState } from 'react';
+
 import { Quote } from '@/lib/supabase';
 
 interface ParsedResultsProps {
@@ -12,6 +14,7 @@ interface ParsedResultsProps {
 
 export default function ParsedResults({ result, onNewParse }: ParsedResultsProps) {
     const { quote, parsed } = result;
+    const [showReasoning, setShowReasoning] = useState(false);
 
     const formatCurrency = (value: number | null) => {
         if (value === null) return 'N/A';
@@ -79,15 +82,15 @@ export default function ParsedResults({ result, onNewParse }: ParsedResultsProps
             </div>
 
             {/* Key financial data - Big Numbers */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Total Quote - Biggest */}
-                <div className="md:col-span-2 glass-card category-total p-8 gentle-glow">
+                <div className="md:col-span-2 bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-gray-600 text-sm font-semibold uppercase tracking-wider mb-3">
+                            <p className="text-gray-500 text-xs font-semibold uppercase tracking-wider mb-1">
                                 Total Quote
                             </p>
-                            <p className="text-6xl md:text-7xl font-black gradient-text leading-none">
+                            <p className="text-4xl font-bold text-gray-900 leading-none">
                                 {formatCurrency(parsed.total_quote)}
                             </p>
                         </div>
@@ -95,39 +98,38 @@ export default function ParsedResults({ result, onNewParse }: ParsedResultsProps
                 </div>
 
                 {/* Guestroom Total */}
-                <div className="glass-card p-6 bg-gradient-to-br from-blue-50 to-cyan-50 border-2 border-blue-200 hover:scale-105 transition-transform">
+                <div className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-blue-600 text-xs font-bold uppercase tracking-wide mb-2">
+                            <p className="text-gray-500 text-xs font-semibold uppercase tracking-wide mb-1">
                                 🛏️ Guestrooms
                             </p>
-                            <p className="text-3xl font-black text-blue-700">
+                            <p className="text-2xl font-bold text-gray-900">
                                 {formatCurrency(parsed.guestroom_total)}
                             </p>
                         </div>
-                        <div className="text-4xl">🏨</div>
                     </div>
                 </div>
 
                 {/* Meeting Room Total */}
-                <div className="glass-card category-meeting p-6">
+                <div className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm">
                     <div>
-                        <p className="text-gray-600 text-xs font-semibold uppercase tracking-wider mb-3">
-                            Meeting Rooms
+                        <p className="text-gray-500 text-xs font-semibold uppercase tracking-wider mb-1">
+                            📊 Meeting Rooms
                         </p>
-                        <p className="text-4xl font-bold text-gray-900">
+                        <p className="text-2xl font-bold text-gray-900">
                             {formatCurrency(parsed.meeting_room_total)}
                         </p>
                     </div>
                 </div>
 
                 {/* Food & Beverage Total */}
-                <div className="md:col-span-2 glass-card category-food p-6">
+                <div className="md:col-span-2 bg-white rounded-xl p-5 border border-gray-200 shadow-sm">
                     <div>
-                        <p className="text-gray-600 text-xs font-semibold uppercase tracking-wider mb-3">
-                            Food & Beverage
+                        <p className="text-gray-500 text-xs font-semibold uppercase tracking-wider mb-1">
+                            🍽️ Food & Beverage
                         </p>
-                        <p className="text-4xl font-bold text-gray-900">
+                        <p className="text-2xl font-bold text-gray-900">
                             {formatCurrency(parsed.food_beverage_total)}
                         </p>
                     </div>
@@ -145,13 +147,26 @@ export default function ParsedResults({ result, onNewParse }: ParsedResultsProps
                             <span>📝</span> Additional Details
                         </h4>
 
-                        {/* Reasoning Section */}
+                        {/* Reasoning Section - Collapsible */}
                         {parsed.reasoning && (
-                            <div className="bg-amber-50 p-4 rounded-xl border border-amber-100 mb-4">
-                                <p className="text-amber-600 text-xs font-bold uppercase tracking-wide mb-2 flex items-center gap-1">
+                            <div className="mb-4">
+                                <button
+                                    onClick={() => setShowReasoning(!showReasoning)}
+                                    className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-amber-600 hover:text-amber-700 transition-colors mb-2"
+                                >
                                     <span>🧠</span> AI Calculation Logic
-                                </p>
-                                <p className="text-gray-700 text-sm whitespace-pre-wrap leading-relaxed">{parsed.reasoning}</p>
+                                    <span className="text-[10px] bg-amber-100 px-1.5 py-0.5 rounded-full">
+                                        {showReasoning ? 'Hide' : 'Show'}
+                                    </span>
+                                </button>
+
+                                {showReasoning && (
+                                    <div className="bg-amber-50 p-4 rounded-xl border border-amber-100 animate-slide-down">
+                                        <p className="text-gray-700 text-sm whitespace-pre-wrap leading-relaxed">
+                                            {parsed.reasoning}
+                                        </p>
+                                    </div>
+                                )}
                             </div>
                         )}
 

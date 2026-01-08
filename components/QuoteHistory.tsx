@@ -9,6 +9,7 @@ export default function QuoteHistory() {
     const [selectedQuote, setSelectedQuote] = useState<Quote | null>(null);
     const [viewingQuote, setViewingQuote] = useState<Quote | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
+    const [showReasoning, setShowReasoning] = useState(false); // For modal
 
     const [copiedId, setCopiedId] = useState<string | null>(null);
 
@@ -176,6 +177,7 @@ export default function QuoteHistory() {
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             setViewingQuote(quote);
+                                            setShowReasoning(false);
                                         }}
                                         className="px-4 py-2 bg-purple-500/10 hover:bg-purple-500/20 text-purple-600 rounded-lg transition-colors font-medium"
                                     >
@@ -272,11 +274,11 @@ export default function QuoteHistory() {
                         </div>
 
                         {/* Content */}
-                        <div className="p-6 space-y-8">
-                            {/* Total Quote - Giant Gradient */}
-                            <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-8 border border-purple-200/50 gentle-glow">
-                                <p className="text-sm font-semibold text-gray-600 mb-2">TOTAL QUOTE</p>
-                                <p className="text-6xl font-black gradient-text">
+                        <div className="p-6 space-y-6">
+                            {/* Total Quote - Clean & Simple */}
+                            <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
+                                <p className="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wider">TOTAL QUOTE</p>
+                                <p className="text-4xl font-bold text-gray-900">
                                     {formatCurrency(viewingQuote.total_quote)}
                                 </p>
                             </div>
@@ -284,38 +286,65 @@ export default function QuoteHistory() {
                             {/* Category Breakdown */}
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 {/* Guestrooms */}
-                                <div className="category-rooms bg-white/90 rounded-2xl p-6 border border-gray-200">
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <span className="text-2xl">🛏️</span>
-                                        <p className="text-sm font-semibold text-gray-600">GUESTROOMS</p>
+                                <div className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                                            🛏️ Guestrooms
+                                        </p>
                                     </div>
-                                    <p className="text-3xl font-bold text-blue-600">
+                                    <p className="text-2xl font-bold text-gray-900">
                                         {formatCurrency(viewingQuote.guestroom_total)}
                                     </p>
                                 </div>
 
                                 {/* Meeting Rooms */}
-                                <div className="category-meeting bg-white/90 rounded-2xl p-6 border border-gray-200">
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <span className="text-2xl">📊</span>
-                                        <p className="text-sm font-semibold text-gray-600">MEETING ROOMS</p>
+                                <div className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                                            📊 Meeting Rooms
+                                        </p>
                                     </div>
-                                    <p className="text-3xl font-bold text-orange-600">
+                                    <p className="text-2xl font-bold text-gray-900">
                                         {formatCurrency(viewingQuote.meeting_room_total)}
                                     </p>
                                 </div>
 
                                 {/* Food & Beverage */}
-                                <div className="category-food bg-white/90 rounded-2xl p-6 border border-gray-200">
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <span className="text-2xl">🍽️</span>
-                                        <p className="text-sm font-semibold text-gray-600">FOOD & BEVERAGE</p>
+                                <div className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                                            🍽️ Food & Beverage
+                                        </p>
                                     </div>
-                                    <p className="text-3xl font-bold text-pink-600">
+                                    <p className="text-2xl font-bold text-gray-900">
                                         {formatCurrency(viewingQuote.food_beverage_total)}
                                     </p>
                                 </div>
                             </div>
+
+                            {/* @ts-ignore - reasoning might not be in Quote type yet but works at runtime */}
+                            {viewingQuote.reasoning && (
+                                <div className="mb-6">
+                                    <button
+                                        onClick={() => setShowReasoning(!showReasoning)}
+                                        className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-amber-600 hover:text-amber-700 transition-colors mb-2"
+                                    >
+                                        <span>🧠</span> AI Calculation Logic
+                                        <span className="text-[10px] bg-amber-100 px-1.5 py-0.5 rounded-full">
+                                            {showReasoning ? 'Hide' : 'Show'}
+                                        </span>
+                                    </button>
+
+                                    {showReasoning && (
+                                        <div className="bg-amber-50 p-4 rounded-xl border border-amber-100 animate-slide-down">
+                                            <p className="text-gray-700 text-sm whitespace-pre-wrap leading-relaxed">
+                                                {/* @ts-ignore */}
+                                                {viewingQuote.reasoning}
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
 
                             {/* Original Content */}
                             <div>
