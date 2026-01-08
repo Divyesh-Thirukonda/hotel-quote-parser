@@ -48,10 +48,16 @@ export default function SnakeGame({ onClose }: SnakeGameProps) {
 
         // Handle keyboard input
         const handleKeyPress = (e: KeyboardEvent) => {
-            // Start game on first arrow key
+            // Restart game after game over
             if (!gameRunning && ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
-                gameRunning = true;
+                // Reset everything
+                snake = [{ x: 10, y: 10 }];
+                direction = { x: 0, y: 0 };
+                currentScore = 0;
+                setScore(0);
                 setGameOver(false);
+                generateFood();
+                gameRunning = true;
             }
 
             switch (e.key) {

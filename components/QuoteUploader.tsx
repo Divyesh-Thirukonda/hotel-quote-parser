@@ -251,7 +251,7 @@ Grand Ballroom = $2,500.00
                             Parsing...
                         </span>
                     ) : (
-                        '✅ Parse Quote'
+                        'Parse Quote'
                     )}
                 </button>
             </div>
