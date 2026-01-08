@@ -23,11 +23,11 @@ export default function Home() {
       <div className="max-w-5xl mx-auto">
         {/* Hero Header */}
         <header className="text-center mb-16 animate-fade-in">
-          <h1 className="text-6xl md:text-7xl font-black gradient-text mb-4 tracking-tight leading-tight">
+          <h1 className="text-6xl md:text-7xl font-black text-black-600 mb-4 tracking-tight leading-tight">
             Hotel Quote Parser
           </h1>
           <p className="text-xl md:text-2xl text-gray-600 font-medium max-w-2xl mx-auto">
-            Extract financial data from hotel quotes, instantly
+            Extract financial data from hotel quotes
           </p>
         </header>
 
